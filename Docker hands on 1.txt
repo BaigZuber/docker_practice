@@ -1,0 +1,210 @@
+1. Docker installation: Install Docker on your local system (Windows, macOS, or Linux). Verify the installation by running the docker --version and docker info commands.
+Ans- 
+root@DESKTOP-1RT156R:~# sudo apt install -y curl
+root@DESKTOP-1RT156R:~# curl -s https://raw.githubusercontent.com/karaage0703/ubuntu-setup/master/install-docker.sh | /bin/bash
+root@DESKTOP-1RT156R:~# sudo apt-get update
+root@DESKTOP-1RT156R:~# sudo apt-get upgrade
+root@DESKTOP-1RT156R:~# sudo service docker start
+root@DESKTOP-1RT156R:~# sudo service docker status
+ * Docker is running
+root@DESKTOP-1RT156R:~# docker --version
+Docker version 24.0.7, build afdd53b
+
+root@DESKTOP-1RT156R:~# docker info
+Client: Docker Engine - Community
+ Version:    24.0.7
+ Context:    default
+ Debug Mode: false
+ Plugins:
+  buildx: Docker Buildx (Docker Inc.)
+    Version:  v0.11.2
+    Path:     /usr/libexec/docker/cli-plugins/docker-buildx
+  compose: Docker Compose (Docker Inc.)
+    Version:  v2.21.0
+    Path:     /usr/libexec/docker/cli-plugins/docker-compose
+
+Server:
+ERROR: Cannot connect to the Docker daemon at unix:///var/run/docker.sock. Is the docker daemon running?
+errors pretty printing info
+
+
+
+
+==============================================================
+
+2. Working with Docker images: Search for the official Ubuntu image on Docker Hub, pull it to your local system using docker pull, and list all available images on your system using docker images.
+Ans-
+root@DESKTOP-1RT156R:~# docker run -i -t ubuntu:latest /bin/bash
+Unable to find image 'ubuntu:latest' locally
+latest: Pulling from library/ubuntu
+a48641193673: Pull complete
+Digest: sha256:6042500cf4b44023ea1894effe7890666b0c5c7871ed83a97c36c76ae560bb9b
+Status: Downloaded newer image for ubuntu:latest
+
+root@a76db1f38bde:/# apt-get update
+root@a76db1f38bde:/# apt-get install curl
+
+root@a76db1f38bde:/# exit
+exit
+root@DESKTOP-1RT156R:~# docker ps -l
+CONTAINER ID   IMAGE           COMMAND       CREATED              STATUS                      PORTS     NAMES
+a76db1f38bde   ubuntu:latest   "/bin/bash"   About a minute ago   Exited (0) 25 seconds ago             sad_ganguly
+root@DESKTOP-1RT156R:~# sudo docker commit a76db1f38bde ubuntu:latest
+sha256:265f1980393a5d81887c1f87d6219247563690eca5efecc7ae637d6c6227fd9b
+root@DESKTOP-1RT156R:~# docker images
+REPOSITORY   TAG       IMAGE ID       CREATED          SIZE
+ubuntu       latest    265f1980393a   14 seconds ago   132MB
+ubuntu       <none>    174c8c134b2a   3 weeks ago      77.9MB
+
+
+
+
+==============================================================
+
+3. Creating a Docker container: Run a Docker container using the Ubuntu image, and execute a command inside the container (e.g., echo "Hello, Docker!").
+Ans-
+root@DESKTOP-1RT156R:~# docker run ubuntu
+root@f13042905759:~# docker run -it ubuntu
+root@f13042905759:/# exit
+exit
+root@DESKTOP-1RT156R:~# docker ps -a
+CONTAINER ID   IMAGE           COMMAND        CREATED          STATUS                        PORTS     NAMES
+f13042905759   ubuntu          "/bin/bash"    9 seconds ago    Exited (0) 3 seconds ago                dazzling_grothendieck
+7d6fa4e2df03   ubuntu          "/bin/bash"    29 seconds ago   Exited (0) 28 seconds ago               xenodochial_thompson
+95d159ee22d0   ubuntu:22.04    "/bin/bash"    19 minutes ago   Exited (0) 18 minutes ago               lucid_elbakyan
+015bcdb5f50b   ubuntu:latest   "/bin/bash"    25 minutes ago   Exited (127) 24 minutes ago             agitated_chaplygin
+f6d26ebf7b88   ubuntu:latest   "/bin/shell"   25 minutes ago   Created                                 bold_dirac
+a76db1f38bde   174c8c134b2a    "/bin/bash"    46 minutes ago   Exited (0) 45 minutes ago               sad_ganguly
+root@DESKTOP-1RT156R:~# docker run ubuntu echo "Hello , Docker!"
+Hello , Docker!
+
+
+
+
+==============================================================
+
+4. Inspect the Ubuntu Docker container to ensure it is in the "created" state only.
+Ans-
+root@DESKTOP-1RT156R:~# docker ps -l
+CONTAINER ID   IMAGE          COMMAND       CREATED         STATUS                     PORTS     NAMES
+a76db1f38bde   174c8c134b2a   "/bin/bash"   9 minutes ago   Exited (0) 8 minutes ago             sad_ganguly
+root@DESKTOP-1RT156R:~# docker inspect a76db1f38bde
+[
+    {
+        "Id": "a76db1f38bde810eccc532a45995ab557e7a8c764536116cc7ec019c96b08420",
+        "Created": "2024-01-09T09:57:56.6809781Z",
+        "Path": "/bin/bash",
+        "Args": [],
+        "State": {
+            "Status": "exited",
+            "Running": false,
+            "Paused": false,
+            "Restarting": false,
+            "OOMKilled": false,
+            "Dead": false,
+            "Pid": 0,
+            "ExitCode": 0,
+            "Error": "",
+            "StartedAt": "2024-01-09T09:57:57.9669787Z",
+            "FinishedAt": "2024-01-09T09:59:25.1233558Z"
+        },
+		
+		
+
+
+
+==============================================================
+
+5. Execute the Ubuntu Docker container and confirm that the container's state is "running."
+Ans-
+root@DESKTOP-1RT156R:~# docker info
+Client: Docker Engine - Community
+ Version:    24.0.7
+ Context:    default
+ Debug Mode: false
+ Plugins:
+  buildx: Docker Buildx (Docker Inc.)
+    Version:  v0.11.2
+    Path:     /usr/libexec/docker/cli-plugins/docker-buildx
+  compose: Docker Compose (Docker Inc.)
+    Version:  v2.21.0
+    Path:     /usr/libexec/docker/cli-plugins/docker-compose
+	
+root@DESKTOP-1RT156R:~# docker search httpd
+NAME                                 DESCRIPTION                                     STARS     OFFICIAL   AUTOMATED
+httpd                                The Apache HTTP Server Project                  4629      [OK]
+clearlinux/httpd                     httpd HyperText Transfer Protocol (HTTP) ser…   5
+paketobuildpacks/httpd                                                               0
+vulhub/httpd                                                                         0
+jitesoft/httpd                       Apache httpd on Alpine linux.                   0
+openquantumsafe/httpd                Demo of post-quantum cryptography in Apache …   6
+wodby/httpd                                                                          0
+
+
+
+
+
+
+==============================================================
+
+6. Launch an HTTP container, verify its state, and then remove the container and image from your local system.
+Ans-
+root@DESKTOP-1RT156R:~# docker pull httpd
+Using default tag: latest
+latest: Pulling from library/httpd
+af107e978371: Pull complete
+eba4da411ea0: Pull complete
+4f4fb700ef54: Pull complete
+ed4d6291a6c2: Pull complete
+b42c390e1de9: Pull complete
+eafe388a0bb8: Pull complete
+Digest: sha256:f0a93744d8006e6f7ee5086c9ddccdcfa33d1091f15269a00547b4c382459c1f
+Status: Downloaded newer image for httpd:latest
+docker.io/library/httpd:latest
+
+
+root@DESKTOP-1RT156R:~# docker ps -a
+CONTAINER ID   IMAGE           COMMAND                  CREATED             STATUS                        PORTS     NAMES
+4b73536d1eeb   ubuntu          "/bin/bash"              7 minutes ago       Exited (0) 7 minutes ago                angry_dhawan
+ce2e744e481a   ubuntu          "echo 'Hello, Docker…"   8 minutes ago       Exited (0) 8 minutes ago                loving_germain
+4e33fc7a6e7e   ubuntu          "/bin/bash"              8 minutes ago       Exited (0) 8 minutes ago                festive_noether
+fbc60949ccce   ubuntu          "echo 'Hello , Docke…"   12 minutes ago      Exited (0) 12 minutes ago               xenodochial_varahamihira
+f13042905759   ubuntu          "/bin/bash"              14 minutes ago      Exited (0) 14 minutes ago               dazzling_grothendieck
+7d6fa4e2df03   ubuntu          "/bin/bash"              14 minutes ago      Exited (0) 14 minutes ago               xenodochial_thompson
+95d159ee22d0   ubuntu:22.04    "/bin/bash"              34 minutes ago      Exited (0) 32 minutes ago               lucid_elbakyan
+015bcdb5f50b   ubuntu:latest   "/bin/bash"              39 minutes ago      Exited (127) 39 minutes ago             agitated_chaplygin
+f6d26ebf7b88   ubuntu:latest   "/bin/shell"             39 minutes ago      Created                                 bold_dirac
+a76db1f38bde   174c8c134b2a    "/bin/bash"              About an hour ago   Exited (0) 59 minutes ago               sad_ganguly
+
+root@DESKTOP-1RT156R:~# docker container stop dazzling_grothendieck
+dazzling_grothendieck
+root@DESKTOP-1RT156R:~# docker container rm dazzling_grothendieck
+dazzling_grothendieck
+root@DESKTOP-1RT156R:~# docker ps -a
+CONTAINER ID   IMAGE           COMMAND                  CREATED             STATUS                         PORTS     NAMES
+4b73536d1eeb   ubuntu          "/bin/bash"              10 minutes ago      Exited (0) 9 minutes ago                 angry_dhawan
+ce2e744e481a   ubuntu          "echo 'Hello, Docker…"   11 minutes ago      Exited (0) 10 minutes ago                loving_germain
+4e33fc7a6e7e   ubuntu          "/bin/bash"              11 minutes ago      Exited (0) 11 minutes ago                festive_noether
+fbc60949ccce   ubuntu          "echo 'Hello , Docke…"   15 minutes ago      Exited (0) 15 minutes ago                xenodochial_varahamihira
+7d6fa4e2df03   ubuntu          "/bin/bash"              17 minutes ago      Exited (0) 17 minutes ago                xenodochial_thompson
+95d159ee22d0   ubuntu:22.04    "/bin/bash"              36 minutes ago      Exited (0) 35 minutes ago                lucid_elbakyan
+015bcdb5f50b   ubuntu:latest   "/bin/bash"              42 minutes ago      Exited (127) 41 minutes ago              agitated_chaplygin
+f6d26ebf7b88   ubuntu:latest   "/bin/shell"             42 minutes ago      Created                                  bold_dirac
+a76db1f38bde   174c8c134b2a    "/bin/bash"              About an hour ago   Exited (0) About an hour ago             sad_ganguly
+
+
+
+
+==============================================================
+
+7. Execute a command to display a filtered list of containers, showing only their short container ID
+Ans-
+root@DESKTOP-1RT156R:~# docker ps -aq
+fbc60949ccce
+f13042905759
+7d6fa4e2df03
+95d159ee22d0
+015bcdb5f50b
+f6d26ebf7b88
+a76db1f38bde
+
