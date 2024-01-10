@@ -23,10 +23,6 @@ Client: Docker Engine - Community
     Version:  v2.21.0
     Path:     /usr/libexec/docker/cli-plugins/docker-compose
 
-Server:
-ERROR: Cannot connect to the Docker daemon at unix:///var/run/docker.sock. Is the docker daemon running?
-errors pretty printing info
-
 
 
 
