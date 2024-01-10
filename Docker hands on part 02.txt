@@ -1,0 +1,1100 @@
+8. Clone the lancachenet/ubuntu-nginx Git repository locally and build a Docker image from the provided Dockerfile. Be sure to add relevant tags when building the image.
+Ans-
+
+root@DESKTOP-1RT156R:~# mkdir project_lan
+root@DESKTOP-1RT156R:~# cd project_lan/
+root@DESKTOP-1RT156R:~/project_lan# git init
+Initialized empty Git repository in /root/project_lan/.git/
+root@DESKTOP-1RT156R:~/project_lan# ls -al
+total 12
+drwxr-xr-x  3 root root 4096 Jan 10 22:23 .
+drwx------ 22 root root 4096 Jan 10 22:23 ..
+drwxr-xr-x  7 root root 4096 Jan 10 22:23 .git
+
+root@DESKTOP-1RT156R:~/project_lan# git clone git@github.com:lancachenet/ubuntu-nginx.git
+Cloning into 'ubuntu-nginx'...
+remote: Enumerating objects: 101, done.
+remote: Counting objects: 100% (28/28), done.
+remote: Compressing objects: 100% (21/21), done.
+remote: Total 101 (delta 3), reused 18 (delta 0), pack-reused 73
+Receiving objects: 100% (101/101), 19.15 KiB | 1.06 MiB/s, done.
+Resolving deltas: 100% (20/20), done.
+
+root@DESKTOP-1RT156R:~/project_lan# ls
+ubuntu-nginx
+
+root@DESKTOP-1RT156R:~/project_lan# cd ubuntu-nginx/
+
+root@DESKTOP-1RT156R:~/project_lan/ubuntu-nginx# ls
+Dockerfile  README.md  goss.yaml  goss_wait.yaml  overlay  run-tests.sh
+
+root@DESKTOP-1RT156R:~/project_lan/ubuntu-nginx# cd
+root@DESKTOP-1RT156R:~# cd project_lan/
+
+root@DESKTOP-1RT156R:~/project_lan# git checkout -b release
+Switched to a new branch 'release'
+
+root@DESKTOP-1RT156R:~/project_lan# cd ubuntu-nginx/
+root@DESKTOP-1RT156R:~/project_lan/ubuntu-nginx# ls
+Dockerfile  README.md  goss.yaml  goss_wait.yaml  overlay  run-tests.sh
+
+root@DESKTOP-1RT156R:~/project_lan/ubuntu-nginx# cat Dockerfile
+FROM lancachenet/ubuntu:latest
+MAINTAINER LanCache.Net Team <team@lancache.net>
+ARG DEBIAN_FRONTEND=noninteractive
+COPY overlay/ /
+RUN apt-get update && apt-get install -y nginx-full inotify-tools
+RUN \
+    chmod 777 /opt/nginx/startnginx.sh && \
+    rm /etc/nginx/sites-available/default /etc/nginx/sites-enabled/default && \
+        mkdir -p /etc/nginx/sites-enabled/ && \
+        mkdir -p /etc/nginx/stream-enabled/ && \
+        for SITE in /etc/nginx/sites-available/*; do [ -e "$SITE" ] || continue; ln -s $SITE /etc/nginx/sites-enabled/`basename $SITE`; done && \
+        for SITE in /etc/nginx/stream-available/*; do [ -e "$SITE" ] || continue; ln -s $SITE /etc/nginx/stream-enabled/`basename $SITE`; done && \
+    mkdir -p /var/www/html && \
+    chmod 777 /var/www/html /var/lib/nginx && \
+    chmod -R 777 /var/log/nginx && \
+    chmod -R 755 /hooks /init && \
+    chmod 755 /var/www && \
+    chmod -R 666 /etc/nginx/sites-* /etc/nginx/conf.d/* /etc/nginx/stream.d/* /etc/nginx/stream-*
+
+EXPOSE 80
+
+root@DESKTOP-1RT156R:~/project_lan/ubuntu-nginx# service docker status
+ * Docker is running
+ 
+root@DESKTOP-1RT156R:~/project_lan/ubuntu-nginx# docker build -t cache-image
+ERROR: "docker buildx build" requires exactly 1 argument.
+See 'docker buildx build --help'.
+
+Usage:  docker buildx build [OPTIONS] PATH | URL | -
+
+Start a build
+
+root@DESKTOP-1RT156R:~/project_lan/ubuntu-nginx# docker build -t cache-image .
+[+] Building 158.2s (9/9) FINISHED                                                                                    docker:default
+ => [internal] load build definition from Dockerfile                                                                            0.0s
+ => => transferring dockerfile: 1.02kB                                                                                          0.0s
+ => [internal] load .dockerignore                                                                                               0.0s
+ => => transferring context: 2B                                                                                                 0.0s
+ => [internal] load metadata for docker.io/lancachenet/ubuntu:latest                                                            4.6s
+ => [internal] load build context                                                                                               0.1s
+ => => transferring context: 7.51kB                                                                                             0.0s
+ => [1/4] FROM docker.io/lancachenet/ubuntu:latest@sha256:7ece2e2aefb4cc13b895823fa7c1ee43763a1b15b84659dcb4daae726f757765    113.1s
+ => => resolve docker.io/lancachenet/ubuntu:latest@sha256:7ece2e2aefb4cc13b895823fa7c1ee43763a1b15b84659dcb4daae726f757765      0.0s
+ => => sha256:7ece2e2aefb4cc13b895823fa7c1ee43763a1b15b84659dcb4daae726f757765 1.57kB / 1.57kB                                  0.0s
+ => => sha256:670916736000a9194948bb34fc0eb35d0bf950fca93cee7b4c0bedcd5b7e2ce3 5.32kB / 5.32kB                                  0.0s
+ => => sha256:41af1b5f0f51947706ae712999cf098bef968a7799e7cb4bb2268829e62a6ab3 26.72MB / 26.72MB                               27.7s
+ => => sha256:900413b3fecbaf33a52810bf85c4813dca098cb81a93c89a8b5ee7e0e03f9cf4 198.15MB / 198.15MB                            100.7s
+ => => sha256:ff9336c01251bbe9df134b491f917d80b5a838061af094262fef71975eba9c0f 992.47kB / 992.47kB                              0.8s
+ => => sha256:9c6fa06d5865b202c1355539171d9f0e34a2b80e820cbfbd6e0c9cf22936d052 668B / 668B                                      1.8s
+ => => sha256:e42b03cf4108fdcebf3fac1cb60c490f2acafae9490945923cfbaa22ea65946d 3.38kB / 3.38kB                                  2.3s
+ => => sha256:d9483b77bd0c52c0938a5843a7a553c2bfa100e613b7a47765bd8c6945cb73fb 1.53kB / 1.53kB                                  2.8s
+ => => extracting sha256:41af1b5f0f51947706ae712999cf098bef968a7799e7cb4bb2268829e62a6ab3                                       2.3s
+ => => extracting sha256:900413b3fecbaf33a52810bf85c4813dca098cb81a93c89a8b5ee7e0e03f9cf4                                      11.4s
+ => => extracting sha256:ff9336c01251bbe9df134b491f917d80b5a838061af094262fef71975eba9c0f                                       0.1s
+ => => extracting sha256:9c6fa06d5865b202c1355539171d9f0e34a2b80e820cbfbd6e0c9cf22936d052                                       0.0s
+ => => extracting sha256:e42b03cf4108fdcebf3fac1cb60c490f2acafae9490945923cfbaa22ea65946d                                       0.0s
+ => => extracting sha256:d9483b77bd0c52c0938a5843a7a553c2bfa100e613b7a47765bd8c6945cb73fb                                       0.0s
+ => [2/4] COPY overlay/ /                                                                                                       1.2s
+ => [3/4] RUN apt-get update && apt-get install -y nginx-full inotify-tools                                                    37.7s
+ => [4/4] RUN     chmod 777 /opt/nginx/startnginx.sh &&     rm /etc/nginx/sites-available/default /etc/nginx/sites-enabled/def  0.8s
+ => exporting to image                                                                                                          0.7s
+ => => exporting layers                                                                                                         0.6s
+ => => writing image sha256:2152522f9cd26390783ab61d69ae9ed75da6931867a1ad7200b70873aec9560d                                    0.0s
+ => => naming to docker.io/library/cache-image
+ 
+ root@DESKTOP-1RT156R:~/project_lan/ubuntu-nginx# docker image ls -a
+REPOSITORY    TAG       IMAGE ID       CREATED         SIZE
+cache-image   latest    2152522f9cd2   2 minutes ago   584MB
+ubuntu        latest    265f1980393a   31 hours ago    132MB
+ubuntu        22.04     174c8c134b2a   4 weeks ago     77.9MB
+httpd         latest    6fd77d7e5eb7   2 months ago    167MB
+
+
+
+
+
+=============================================================
+9. After building the image, run a Docker container using the image and check the webpage using the curl command to ensure it's accessible.
+Ans-
+
+root@DESKTOP-1RT156R:~/project_lan/ubuntu-nginx# docker container run -it --rm -d -p 8182:80 --name ubuntu-nginx cache-image
+2a61a0f76bf99594b5facf282800654ab414a4b14e0aab09b03aca8628491f93
+
+root@DESKTOP-1RT156R:~/project_lan/ubuntu-nginx# docker container ls -a
+CONTAINER ID   IMAGE         COMMAND                  CREATED          STATUS          PORTS                                   NAMES
+2a61a0f76bf9   cache-image   "/bin/bash -e /init/…"   17 seconds ago   Up 16 seconds   0.0.0.0:8182->80/tcp, :::8182->80/tcp   ubuntu-nginx
+
+root@DESKTOP-1RT156R:~/project_lan/ubuntu-nginx# curl http://www.example.com
+<!doctype html>
+<html>
+<head>
+    <title>Example Domain</title>
+
+    <meta charset="utf-8" />
+    <meta http-equiv="Content-type" content="text/html; charset=utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <style type="text/css">
+    body {
+        background-color: #f0f0f2;
+        margin: 0;
+        padding: 0;
+        font-family: -apple-system, system-ui, BlinkMacSystemFont, "Segoe UI", "Open Sans", "Helvetica Neue", Helvetica, Arial, sans-serif;
+
+    }
+    div {
+        width: 600px;
+        margin: 5em auto;
+        padding: 2em;
+        background-color: #fdfdff;
+        border-radius: 0.5em;
+        box-shadow: 2px 3px 7px 2px rgba(0,0,0,0.02);
+    }
+    a:link, a:visited {
+        color: #38488f;
+        text-decoration: none;
+    }
+    @media (max-width: 700px) {
+        div {
+            margin: 0 auto;
+            width: auto;
+        }
+    }
+    </style>
+</head>
+
+<body>
+<div>
+    <h1>Example Domain</h1>
+    <p>This domain is for use in illustrative examples in documents. You may use this
+    domain in literature without prior coordination or asking for permission.</p>
+    <p><a href="https://www.iana.org/domains/example">More information...</a></p>
+</div>
+</body>
+</html>
+
+
+
+
+
+=============================================================
+
+11. Launch an Ubuntu container, demonstrate that the escape sequence is functional, and reattach the container after detaching it with the escape sequence. Then, check the container's IP address.
+Ans-
+
+root@DESKTOP-1RT156R:~/project_lan/ubuntu-nginx# docker container run -it ubuntu
+root@482d911d5db4:/# exit
+exit
+
+root@DESKTOP-1RT156R:~/project_lan/ubuntu-nginx# docker container ls -a
+CONTAINER ID   IMAGE         COMMAND                  CREATED          STATUS                      PORTS                                   NAMES
+482d911d5db4   ubuntu        "/bin/bash"              38 seconds ago   Exited (0) 14 seconds ago                                           upbeat_mccarthy
+2a61a0f76bf9   cache-image   "/bin/bash -e /init/…"   3 minutes ago    Up 3 minutes                0.0.0.0:8182->80/tcp, :::8182->80/tcp   ubuntu-nginx
+
+root@DESKTOP-1RT156R:~/project_lan/ubuntu-nginx# docker container start 482d911d5db4
+482d911d5db4
+
+root@DESKTOP-1RT156R:~/project_lan/ubuntu-nginx# docker inspect 482d911d5db4
+ "SecondaryIPAddresses": null,
+            "IPAddress": "172.17.0.3",
+                    "IPAddress": "172.17.0.3",
+
+
+
+
+
+=============================================================
+
+12. Use a Docker command to inspect the hostname and /etc/hosts file of the httpd container.
+Ans-
+
+root@DESKTOP-1RT156R:~/project_lan/ubuntu-nginx# docker container ls -a
+CONTAINER ID   IMAGE         COMMAND                  CREATED          STATUS         PORTS                                   NAMES
+482d911d5db4   ubuntu        "/bin/bash"              7 minutes ago    Up 5 minutes                                           upbeat_mccarthy
+2a61a0f76bf9   cache-image   "/bin/bash -e /init/…"   10 minutes ago   Up 9 minutes   0.0.0.0:8182->80/tcp, :::8182->80/tcp   ubuntu-nginx
+
+root@DESKTOP-1RT156R:~/project_lan/ubuntu-nginx# docker container exec 482d911d5db4 hostname
+482d911d5db4
+
+root@DESKTOP-1RT156R:~/project_lan/ubuntu-nginx# docker container exec 482d911d5db4 cat /etc/hosts
+127.0.0.1       localhost
+::1     localhost ip6-localhost ip6-loopback
+fe00::0 ip6-localnet
+ff00::0 ip6-mcastprefix
+ff02::1 ip6-allnodes
+ff02::2 ip6-allrouters
+172.17.0.3      482d911d5db4
+
+
+
+
+
+=============================================================
+
+13. Run a Docker command to inspect a container created with the lancachenet/ubuntu-nginx repository, and monitor the container's resource usage and stats with the TOP command.
+Ans-
+
+root@DESKTOP-1RT156R:~/project_lan/ubuntu-nginx# docker container inspect 2a61a0f76bf9
+[
+    {
+        "Id": "2a61a0f76bf99594b5facf282800654ab414a4b14e0aab09b03aca8628491f93",
+        "Created": "2024-01-10T17:03:25.8832529Z",
+        "Path": "/bin/bash",
+        "Args": [
+            "-e",
+            "/init/entrypoint",
+            "/init/supervisord"
+        ],
+        "State": {
+            "Status": "running",
+            "Running": true,
+            "Paused": false,
+            "Restarting": false,
+            "OOMKilled": false,
+            "Dead": false,
+            "Pid": 1582,
+            "ExitCode": 0,
+            "Error": "",
+            "StartedAt": "2024-01-10T17:03:26.5255113Z",
+            "FinishedAt": "0001-01-01T00:00:00Z"
+        },
+        "Image": "sha256:2152522f9cd26390783ab61d69ae9ed75da6931867a1ad7200b70873aec9560d",
+        "ResolvConfPath": "/var/lib/docker/containers/2a61a0f76bf99594b5facf282800654ab414a4b14e0aab09b03aca8628491f93/resolv.conf",
+        "HostnamePath": "/var/lib/docker/containers/2a61a0f76bf99594b5facf282800654ab414a4b14e0aab09b03aca8628491f93/hostname",
+        "HostsPath": "/var/lib/docker/containers/2a61a0f76bf99594b5facf282800654ab414a4b14e0aab09b03aca8628491f93/hosts",
+        "LogPath": "/var/lib/docker/containers/2a61a0f76bf99594b5facf282800654ab414a4b14e0aab09b03aca8628491f93/2a61a0f76bf99594b5facf282800654ab414a4b14e0aab09b03aca8628491f93-json.log",
+        "Name": "/ubuntu-nginx",
+        "RestartCount": 0,
+        "Driver": "overlay2",
+        "Platform": "linux",
+        "MountLabel": "",
+        "ProcessLabel": "",
+        "AppArmorProfile": "",
+        "ExecIDs": null,
+        "HostConfig": {
+            "Binds": null,
+            "ContainerIDFile": "",
+            "LogConfig": {
+                "Type": "json-file",
+                "Config": {}
+            },
+            "NetworkMode": "default",
+            "PortBindings": {
+                "80/tcp": [
+                    {
+                        "HostIp": "",
+                        "HostPort": "8182"
+                    }
+                ]
+            },
+            "RestartPolicy": {
+                "Name": "no",
+                "MaximumRetryCount": 0
+            },
+            "AutoRemove": true,
+            "VolumeDriver": "",
+            "VolumesFrom": null,
+            "ConsoleSize": [
+                30,
+                133
+            ],
+            "CapAdd": null,
+            "CapDrop": null,
+            "CgroupnsMode": "host",
+            "Dns": [],
+            "DnsOptions": [],
+            "DnsSearch": [],
+            "ExtraHosts": null,
+            "GroupAdd": null,
+            "IpcMode": "private",
+            "Cgroup": "",
+            "Links": null,
+            "OomScoreAdj": 0,
+            "PidMode": "",
+            "Privileged": false,
+            "PublishAllPorts": false,
+            "ReadonlyRootfs": false,
+            "SecurityOpt": null,
+            "UTSMode": "",
+            "UsernsMode": "",
+            "ShmSize": 67108864,
+            "Runtime": "runc",
+            "Isolation": "",
+            "CpuShares": 0,
+            "Memory": 0,
+            "NanoCpus": 0,
+            "CgroupParent": "",
+            "BlkioWeight": 0,
+            "BlkioWeightDevice": [],
+            "BlkioDeviceReadBps": [],
+            "BlkioDeviceWriteBps": [],
+            "BlkioDeviceReadIOps": [],
+            "BlkioDeviceWriteIOps": [],
+            "CpuPeriod": 0,
+            "CpuQuota": 0,
+            "CpuRealtimePeriod": 0,
+            "CpuRealtimeRuntime": 0,
+            "CpusetCpus": "",
+            "CpusetMems": "",
+            "Devices": [],
+            "DeviceCgroupRules": null,
+            "DeviceRequests": null,
+            "MemoryReservation": 0,
+            "MemorySwap": 0,
+            "MemorySwappiness": null,
+            "OomKillDisable": false,
+            "PidsLimit": null,
+            "Ulimits": null,
+            "CpuCount": 0,
+            "CpuPercent": 0,
+            "IOMaximumIOps": 0,
+            "IOMaximumBandwidth": 0,
+            "MaskedPaths": [
+                "/proc/asound",
+                "/proc/acpi",
+                "/proc/kcore",
+                "/proc/keys",
+                "/proc/latency_stats",
+                "/proc/timer_list",
+                "/proc/timer_stats",
+                "/proc/sched_debug",
+                "/proc/scsi",
+                "/sys/firmware",
+                "/sys/devices/virtual/powercap"
+            ],
+            "ReadonlyPaths": [
+                "/proc/bus",
+                "/proc/fs",
+                "/proc/irq",
+                "/proc/sys",
+                "/proc/sysrq-trigger"
+            ]
+        },
+        "GraphDriver": {
+            "Data": {
+                "LowerDir": "/var/lib/docker/overlay2/f8706859ba0f2c035e023ae0f5acd7209b5405173fad0af03c1ec8d66d00a667-init/diff:/var/lib/docker/overlay2/f1zxm5x6duapi9bbz75hqmo9g/diff:/var/lib/docker/overlay2/7jn4968fs6lcjoiovxqu9xmcr/diff:/var/lib/docker/overlay2/486kl5q41sg7c1y3h13sws5y6/diff:/var/lib/docker/overlay2/4b2eab4de586808328d7e9329bf884fd575b6c2641949db3612a90e976e532bd/diff:/var/lib/docker/overlay2/f26fcb76cde1970c4d623bac5948a7ae8ed876d29d3e4058c342492125b0d02f/diff:/var/lib/docker/overlay2/dd40d1f722a437471fd1ca8197ba3163ee6cb745afe5df10cc236ae37b26feaf/diff:/var/lib/docker/overlay2/859e4224b39c019ba7037e1f1a2ff085cab5a841c3525f66ffe8a4fef9f0ee25/diff:/var/lib/docker/overlay2/2f335a4af8fcff823a8ef3f5c51db2c3a3ff6c07c15cc0554adecd5c3187fcc7/diff:/var/lib/docker/overlay2/4bfd1c54dbc7e9c5599f6e3dff8328d15871dfd182503c15ac8aca0a1886ac4f/diff",
+                "MergedDir": "/var/lib/docker/overlay2/f8706859ba0f2c035e023ae0f5acd7209b5405173fad0af03c1ec8d66d00a667/merged",
+                "UpperDir": "/var/lib/docker/overlay2/f8706859ba0f2c035e023ae0f5acd7209b5405173fad0af03c1ec8d66d00a667/diff",
+                "WorkDir": "/var/lib/docker/overlay2/f8706859ba0f2c035e023ae0f5acd7209b5405173fad0af03c1ec8d66d00a667/work"
+            },
+            "Name": "overlay2"
+        },
+        "Mounts": [],
+        "Config": {
+            "Hostname": "2a61a0f76bf9",
+            "Domainname": "",
+            "User": "",
+            "AttachStdin": false,
+            "AttachStdout": false,
+            "AttachStderr": false,
+            "ExposedPorts": {
+                "80/tcp": {}
+            },
+            "Tty": true,
+            "OpenStdin": true,
+            "StdinOnce": false,
+            "Env": [
+                "PATH=/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin",
+                "SUPERVISORD_EXIT_ON_FATAL=1",
+                "LC_ALL=en_GB.UTF-8",
+                "LANG=en_GB.UTF-8",
+                "LANGUAGE=en_GB.UTF-8",
+                "TZ=Europe/London",
+                "SUPERVISORD_LOGLEVEL=WARN"
+            ],
+            "Cmd": [
+                "/init/supervisord"
+            ],
+            "Image": "cache-image",
+            "Volumes": null,
+            "WorkingDir": "",
+            "Entrypoint": [
+                "/bin/bash",
+                "-e",
+                "/init/entrypoint"
+            ],
+            "OnBuild": null,
+            "Labels": {
+                "org.opencontainers.image.ref.name": "ubuntu",
+                "org.opencontainers.image.version": "18.04"
+            }
+        },
+        "NetworkSettings": {
+            "Bridge": "",
+            "SandboxID": "2556e19aed17002ded585805f1bc2606bff58c1bba91497e727cf8245ea6fbac",
+            "HairpinMode": false,
+            "LinkLocalIPv6Address": "",
+            "LinkLocalIPv6PrefixLen": 0,
+            "Ports": {
+                "80/tcp": [
+                    {
+                        "HostIp": "0.0.0.0",
+                        "HostPort": "8182"
+                    },
+                    {
+                        "HostIp": "::",
+                        "HostPort": "8182"
+                    }
+                ]
+            },
+            "SandboxKey": "/var/run/docker/netns/2556e19aed17",
+            "SecondaryIPAddresses": null,
+            "SecondaryIPv6Addresses": null,
+            "EndpointID": "effcab52446c156e9700aa4e7d2504a887975bf149b87d3efb5eae7978065075",
+            "Gateway": "172.17.0.1",
+            "GlobalIPv6Address": "",
+            "GlobalIPv6PrefixLen": 0,
+            "IPAddress": "172.17.0.2",
+            "IPPrefixLen": 16,
+            "IPv6Gateway": "",
+            "MacAddress": "02:42:ac:11:00:02",
+            "Networks": {
+                "bridge": {
+                    "IPAMConfig": null,
+                    "Links": null,
+                    "Aliases": null,
+                    "NetworkID": "08d28068a948216261d67ff7d6d2372c56cbd6591059c2bc742672a40f2950b7",
+                    "EndpointID": "effcab52446c156e9700aa4e7d2504a887975bf149b87d3efb5eae7978065075",
+                    "Gateway": "172.17.0.1",
+                    "IPAddress": "172.17.0.2",
+                    "IPPrefixLen": 16,
+                    "IPv6Gateway": "",
+                    "GlobalIPv6Address": "",
+                    "GlobalIPv6PrefixLen": 0,
+                    "MacAddress": "02:42:ac:11:00:02",
+                    "DriverOpts": null
+                }
+            }
+        }
+    }
+]
+
+root@DESKTOP-1RT156R:~/project_lan/ubuntu-nginx# docker container stats
+CONTAINER ID   NAME              CPU %     MEM USAGE / LIMIT     MEM %     NET I/O       BLOCK I/O   PIDS
+482d911d5db4   upbeat_mccarthy   0.01%     1.145MiB / 6.121GiB   0.02%     1.08kB / 0B   0B / 0B     1
+2a61a0f76bf9   ubuntu-nginx      0.04%     21.07MiB / 6.121GiB   0.34%     1.3kB / 0B    0B / 0B     7
+CONTAINER ID   NAME              CPU %     MEM USAGE / LIMIT     MEM %     NET I/O       BLOCK I/O   PIDS
+482d911d5db4   upbeat_mccarthy   0.01%     1.145MiB / 6.121GiB   0.02%     1.08kB / 0B   0B / 0B     1
+2a61a0f76bf9   ubuntu-nginx      0.04%     21.07MiB / 6.121GiB   0.34%     1.3kB / 0B    0B / 0B     7
+CONTAINER ID   NAME              CPU %     MEM USAGE / LIMIT     MEM %     NET I/O       BLOCK I/O   PIDS
+482d911d5db4   upbeat_mccarthy   0.00%     1.145MiB / 6.121GiB   0.02%     1.08kB / 0B   0B / 0B     1
+2a61a0f76bf9   ubuntu-nginx      0.04%     21.07MiB / 6.121GiB   0.34%     1.3kB / 0B    0B / 0B     7
+CONTAINER ID   NAME              CPU %     MEM USAGE / LIMIT     MEM %     NET I/O       BLOCK I/O   PIDS
+482d911d5db4   upbeat_mccarthy   0.00%     1.145MiB / 6.121GiB   0.02%     1.08kB / 0B   0B / 0B     1
+2a61a0f76bf9   ubuntu-nginx      0.04%     21.07MiB / 6.121GiB   0.34%     1.3kB / 0B    0B / 0B     7
+CONTAINER ID   NAME              CPU %     MEM USAGE / LIMIT     MEM %     NET I/O       BLOCK I/O   PIDS
+482d911d5db4   upbeat_mccarthy   0.00%     1.145MiB / 6.121GiB   0.02%     1.08kB / 0B   0B / 0B     1
+2a61a0f76bf9   ubuntu-nginx      0.04%     21.07MiB / 6.121GiB   0.34%     1.3kB / 0B    0B / 0B     7
+CONTAINER ID   NAME              CPU %     MEM USAGE / LIMIT     MEM %     NET I/O       BLOCK I/O   PIDS
+482d911d5db4   upbeat_mccarthy   0.00%     1.145MiB / 6.121GiB   0.02%     1.08kB / 0B   0B / 0B     1
+2a61a0f76bf9   ubuntu-nginx      0.04%     21.07MiB / 6.121GiB   0.34%     1.3kB / 0B    0B / 0B     7
+CONTAINER ID   NAME              CPU %     MEM USAGE / LIMIT     MEM %     NET I/O       BLOCK I/O   PIDS
+482d911d5db4   upbeat_mccarthy   0.00%     1.145MiB / 6.121GiB   0.02%     1.08kB / 0B   0B / 0B     1
+2a61a0f76bf9   ubuntu-nginx      0.04%     21.07MiB / 6.121GiB   0.34%     1.3kB / 0B    0B / 0B     7
+CONTAINER ID   NAME              CPU %     MEM USAGE / LIMIT     MEM %     NET I/O       BLOCK I/O   PIDS
+482d911d5db4   upbeat_mccarthy   0.00%     1.145MiB / 6.121GiB   0.02%     1.08kB / 0B   0B / 0B     1
+2a61a0f76bf9   ubuntu-nginx      0.04%     21.07MiB / 6.121GiB   0.34%     1.3kB / 0B    0B / 0B     7
+CONTAINER ID   NAME              CPU %     MEM USAGE / LIMIT     MEM %     NET I/O       BLOCK I/O   PIDS
+482d911d5db4   upbeat_mccarthy   0.00%     1.145MiB / 6.121GiB   0.02%     1.08kB / 0B   0B / 0B     1
+2a61a0f76bf9   ubuntu-nginx      0.04%     21.07MiB / 6.121GiB   0.34%     1.3kB / 0B    0B / 0B     7
+^C
+
+root@DESKTOP-1RT156R:~/project_lan/ubuntu-nginx# docker container top 2a61a0f76bf9
+UID                 PID                 PPID                C                   STIME               TTY                 TIME                CMD
+root                1582                1561                0                   22:33               pts/0               00:00:01            /usr/bin/python3 /usr/local/bin/supervisord -n -c /etc/supervisor/supervisord.conf -e WARN
+root                1618                1582                0                   22:33               pts/0               00:00:00            /bin/bash /opt/nginx/startnginx.sh
+root                1619                1618                0                   22:33               pts/0               00:00:00            nginx: master process /usr/sbin/nginx -g daemon off;
+www-data            1620                1619                0                   22:33               pts/0               00:00:00            nginx: worker process
+www-data            1621                1619                0                   22:33               pts/0               00:00:00            nginx: worker process
+www-data            1622                1619                0                   22:33               pts/0               00:00:00            nginx: worker process
+www-data            1623                1619                0                   22:33               pts/0               00:00:00            nginx: worker process
+root@DESKTOP-1RT156R:~/project_lan/ubuntu-nginx#
+
+
+
+
+
+=============================================================
+
+14. Start a new Nginx container and review the logs for both Nginx containers.
+Ans-
+
+root@DESKTOP-1RT156R:~# mkdir project_lan1
+root@DESKTOP-1RT156R:~# ls
+clone  git_repo1  lenovo   project1  project4       project_lan   project_repo  ubuntu-nginxx
+dell   hp         project  project3  project_clone  project_lan1  tmp           zuber.tar.gz
+
+root@DESKTOP-1RT156R:~# git checkout -b release
+Switched to a new branch 'release'
+
+root@DESKTOP-1RT156R:~# cd project_lan1
+root@DESKTOP-1RT156R:~/project_lan1# ls -al
+total 8
+drwxr-xr-x  2 root root 4096 Jan 10 23:13 .
+drwx------ 23 root root 4096 Jan 10 23:13 ..
+
+root@DESKTOP-1RT156R:~/project_lan1# git init
+Initialized empty Git repository in /root/project_lan1/.git/
+
+root@DESKTOP-1RT156R:~/project_lan1# ls -al
+total 12
+drwxr-xr-x  3 root root 4096 Jan 10 23:14 .
+drwx------ 23 root root 4096 Jan 10 23:13 ..
+drwxr-xr-x  7 root root 4096 Jan 10 23:14 .git
+
+root@DESKTOP-1RT156R:~/project_lan1# git clone git@github.com:lancachenet/ubuntu-nginx.git
+Cloning into 'ubuntu-nginx'...
+remote: Enumerating objects: 101, done.
+remote: Counting objects: 100% (28/28), done.
+remote: Compressing objects: 100% (21/21), done.
+remote: Total 101 (delta 3), reused 18 (delta 0), pack-reused 73
+Receiving objects: 100% (101/101), 19.15 KiB | 1.47 MiB/s, done.
+Resolving deltas: 100% (20/20), done.
+
+root@DESKTOP-1RT156R:~/project_lan1# ls
+ubuntu-nginx
+root@DESKTOP-1RT156R:~/project_lan1# cd ubuntu-nginx/
+root@DESKTOP-1RT156R:~/project_lan1/ubuntu-nginx# ls
+Dockerfile  README.md  goss.yaml  goss_wait.yaml  overlay  run-tests.sh
+
+root@DESKTOP-1RT156R:~/project_lan1/ubuntu-nginx# docker image ls -a
+REPOSITORY     TAG       IMAGE ID       CREATED          SIZE
+cache-image1   latest    2152522f9cd2   51 minutes ago   584MB
+cache-image    latest    2152522f9cd2   51 minutes ago   584MB
+ubuntu         latest    265f1980393a   32 hours ago     132MB
+ubuntu         22.04     174c8c134b2a   4 weeks ago      77.9MB
+httpd          latest    6fd77d7e5eb7   2 months ago     167MB
+root@DESKTOP-1RT156R:~/project_lan1/ubuntu-nginx# docker container run -itd cache-image1
+3246cbe64b053dc1a468134140fb98a9c83e8d5525de7d2d1e26c3da879d9529
+root@DESKTOP-1RT156R:~/project_lan1/ubuntu-nginx# docker container ls -a
+CONTAINER ID   IMAGE          COMMAND                  CREATED             STATUS             PORTS
+ NAMES
+3246cbe64b05   cache-image1   "/bin/bash -e /init/…"   22 seconds ago      Up 22 seconds      80/tcp
+ sharp_kilby
+482d911d5db4   ubuntu         "/bin/bash"              59 minutes ago      Up 57 minutes
+ upbeat_mccarthy
+2a61a0f76bf9   cache-image    "/bin/bash -e /init/…"   About an hour ago   Up About an hour   0.0.0.0:8182->80/tcp, :::8182->80/tcp   ubuntu-nginx
+root@DESKTOP-1RT156R:~/project_lan1/ubuntu-nginx# docker container logs 2a61a0f76bf9
+Executing hook /hooks/entrypoint-pre.d/00_asciilogo.sh
+  _                  _____           _                       _
+ | |                / ____|         | |                     | |
+ | |     __ _ _ __ | |     __ _  ___| |__   ___   _ __   ___| |_
+ | |    / _` | '_ \| |    / _` |/ __| '_ \ / _ \ | '_ \ / _ \ __|
+ | |___| (_| | | | | |___| (_| | (__| | | |  __/_| | | |  __/ |_
+ |______\__,_|_| |_|\_____\__,_|\___|_| |_|\___(_)_| |_|\___|\__|
+
+
+Executing hook /hooks/supervisord-pre.d/20_test_files_setup
+Checking if /var/www/ is empty - Directory not empty.. don't touch content
+Executing hook /hooks/supervisord-pre.d/21_cleanup_log_files
+Cleaning up log files older than 7 days
+Starting Supervisord
+root@DESKTOP-1RT156R:~/project_lan1/ubuntu-nginx# docker container logs 3246cbe64b05
+Executing hook /hooks/entrypoint-pre.d/00_asciilogo.sh
+  _                  _____           _                       _
+ | |                / ____|         | |                     | |
+ | |     __ _ _ __ | |     __ _  ___| |__   ___   _ __   ___| |_
+ | |    / _` | '_ \| |    / _` |/ __| '_ \ / _ \ | '_ \ / _ \ __|
+ | |___| (_| | | | | |___| (_| | (__| | | |  __/_| | | |  __/ |_
+ |______\__,_|_| |_|\_____\__,_|\___|_| |_|\___(_)_| |_|\___|\__|
+
+
+Executing hook /hooks/supervisord-pre.d/20_test_files_setup
+Checking if /var/www/ is empty - Directory not empty.. don't touch content
+Executing hook /hooks/supervisord-pre.d/21_cleanup_log_files
+Cleaning up log files older than 7 days
+Starting Supervisord
+
+
+
+
+
+=============================================================
+
+15. Examine system events, filtering them by date and the last 30 minutes. Additionally, apply two filters simultaneously using name and event.
+Ans-
+
+root@DESKTOP-1RT156R:~/project_lan1/ubuntu-nginx# docker system events --since '2024-01-10T00:00:30' --filter 'container=3246cbe64b05'
+2024-01-10T23:35:04.269945500+05:30 container create 3246cbe64b053dc1a468134140fb98a9c83e8d5525de7d2d1e26c3da879d9529 (image=cache-image1, name=sharp_kilby, org.opencontainers.image.ref.name=ubuntu, org.opencontainers.image.version=18.04)
+2024-01-10T23:35:04.846043400+05:30 container start 3246cbe64b053dc1a468134140fb98a9c83e8d5525de7d2d1e26c3da879d9529 (image=cache-image1, name=sharp_kilby, org.opencontainers.image.ref.name=ubuntu, org.opencontainers.image.version=18.04)
+^C
+
+
+
+
+=============================================================
+
+16. Create a Docker container using the Ubuntu image, assign it a meaningful name, and set the hostname to "cloudethix.com." Stop or kill the container, check its exit code, and examine the container's log for more information.
+Ans-
+
+root@DESKTOP-1RT156R:~/project_lan1/ubuntu-nginx# docker container run -itd --name ubuntu_contnr --hostname cloudethix.com cache-image1
+6b8fd84ccf458f8d5a8e23af67cb559c364f76ee02b6b8af252f3e7a2f23e4cf
+
+root@DESKTOP-1RT156R:~/project_lan1/ubuntu-nginx# docker container ls -a
+CONTAINER ID   IMAGE          COMMAND                  CREATED             STATUS             PORTS                                   NAMES
+6b8fd84ccf45   cache-image1   "/bin/bash -e /init/…"   40 seconds ago      Up 39 seconds      80/tcp                                  ubuntu_contnr
+3246cbe64b05   cache-image1   "/bin/bash -e /init/…"   6 minutes ago       Up 6 minutes       80/tcp                                  sharp_kilby
+482d911d5db4   ubuntu         "/bin/bash"              About an hour ago   Up About an hour                                           upbeat_mccarthy
+2a61a0f76bf9   cache-image    "/bin/bash -e /init/…"   About an hour ago   Up About an hour   0.0.0.0:8182->80/tcp, :::8182->80/tcp   ubuntu-nginx
+
+root@DESKTOP-1RT156R:~/project_lan1/ubuntu-nginx# docker exec 6b8fd84ccf45 hostname
+cloudethix.com
+
+root@DESKTOP-1RT156R:~/project_lan1/ubuntu-nginx# docker container stop cache-image1
+Error response from daemon: No such container: cache-image1
+
+root@DESKTOP-1RT156R:~/project_lan1/ubuntu-nginx# docker container stop ubuntu_contnr
+ubuntu_contnr
+
+root@DESKTOP-1RT156R:~/project_lan1/ubuntu-nginx# docker container ls -a
+CONTAINER ID   IMAGE          COMMAND                  CREATED             STATUS                      PORTS                                   NAMES
+6b8fd84ccf45   cache-image1   "/bin/bash -e /init/…"   3 minutes ago       Exited (0) 25 seconds ago                                           ubuntu_contnr
+3246cbe64b05   cache-image1   "/bin/bash -e /init/…"   9 minutes ago       Up 9 minutes                80/tcp                                  sharp_kilby
+482d911d5db4   ubuntu         "/bin/bash"              About an hour ago   Up About an hour                                                    upbeat_mccarthy
+2a61a0f76bf9   cache-image    "/bin/bash -e /init/…"   About an hour ago   Up About an hour            0.0.0.0:8182->80/tcp, :::8182->80/tcp   ubuntu-nginx
+
+root@DESKTOP-1RT156R:~/project_lan1/ubuntu-nginx# docker container logs ubuntu_contnr
+Executing hook /hooks/entrypoint-pre.d/00_asciilogo.sh
+  _                  _____           _                       _
+ | |                / ____|         | |                     | |
+ | |     __ _ _ __ | |     __ _  ___| |__   ___   _ __   ___| |_
+ | |    / _` | '_ \| |    / _` |/ __| '_ \ / _ \ | '_ \ / _ \ __|
+ | |___| (_| | | | | |___| (_| | (__| | | |  __/_| | | |  __/ |_
+ |______\__,_|_| |_|\_____\__,_|\___|_| |_|\___(_)_| |_|\___|\__|
+
+
+Executing hook /hooks/supervisord-pre.d/20_test_files_setup
+Checking if /var/www/ is empty - Directory not empty.. don't touch content
+Executing hook /hooks/supervisord-pre.d/21_cleanup_log_files
+Cleaning up log files older than 7 days
+Starting Supervisord
+2024-01-10 18:13:57,963 WARN received SIGTERM indicating exit request
+2024-01-10 18:13:57,965 WARN stopped: nginx (terminated by SIGTERM)
+
+
+
+
+
+=============================================================
+
+17. Instantiate and start an Ubuntu container with a random name, then rename it to "Ubuntu01." Launch another container named "Ubuntu02" and check the hostname of both containers. Pause and un-pause the "Ubuntu02" container, and stop, start, and restart the "Ubuntu01" container. Inspect the stats and system events of both containers, then kill and delete them, ensuring that directories created by the containers are removed.
+Ans-
+
+root@DESKTOP-1RT156R:~/project_lan1/ubuntu-nginx# docker container run -it ubuntu
+root@2f5bc96329a7:/# exit
+exit
+
+root@DESKTOP-1RT156R:~/project_lan1/ubuntu-nginx# docker container rename 482d911d5db4 Ubuntu01
+
+root@DESKTOP-1RT156R:~/project_lan1/ubuntu-nginx# docker container ls -a
+CONTAINER ID   IMAGE          COMMAND                  CREATED              STATUS                      PORTS                                   NAMES
+2f5bc96329a7   ubuntu         "/bin/bash"              About a minute ago   Exited (0) 50 seconds ago                                           clever_zhukovsky
+6b8fd84ccf45   cache-image1   "/bin/bash -e /init/…"   8 minutes ago        Exited (0) 5 minutes ago                                            ubuntu_contnr
+3246cbe64b05   cache-image1   "/bin/bash -e /init/…"   14 minutes ago       Up 14 minutes               80/tcp                                  sharp_kilby
+482d911d5db4   ubuntu         "/bin/bash"              About an hour ago    Up About an hour                                                    Ubuntu01
+2a61a0f76bf9   cache-image    "/bin/bash -e /init/…"   About an hour ago    Up About an hour            0.0.0.0:8182->80/tcp, :::8182->80/tcp   ubuntu-nginx
+
+root@DESKTOP-1RT156R:~/project_lan1/ubuntu-nginx# docker container run -it --name Ubuntu02 cache-image:latest
+Executing hook /hooks/entrypoint-pre.d/00_asciilogo.sh
+  _                  _____           _                       _
+ | |                / ____|         | |                     | |
+ | |     __ _ _ __ | |     __ _  ___| |__   ___   _ __   ___| |_
+ | |    / _` | '_ \| |    / _` |/ __| '_ \ / _ \ | '_ \ / _ \ __|
+ | |___| (_| | | | | |___| (_| | (__| | | |  __/_| | | |  __/ |_
+ |______\__,_|_| |_|\_____\__,_|\___|_| |_|\___(_)_| |_|\___|\__|
+
+
+Executing hook /hooks/supervisord-pre.d/20_test_files_setup
+Checking if /var/www/ is empty - Directory not empty.. don't touch content
+Executing hook /hooks/supervisord-pre.d/21_cleanup_log_files
+Cleaning up log files older than 7 days
+Starting Supervisord
+^C2024-01-10 18:20:05,142 WARN received SIGINT indicating exit request
+2024-01-10 18:20:05,143 WARN stopped: nginx (terminated by SIGTERM)
+
+root@DESKTOP-1RT156R:~/project_lan1/ubuntu-nginx# docker container ls -a
+CONTAINER ID   IMAGE                COMMAND                  CREATED             STATUS                      PORTS
+ NAMES
+402464403b03   cache-image:latest   "/bin/bash -e /init/…"   26 seconds ago      Exited (0) 20 seconds ago
+ Ubuntu02
+2f5bc96329a7   ubuntu               "/bin/bash"              2 minutes ago       Exited (0) 2 minutes ago
+ clever_zhukovsky
+6b8fd84ccf45   cache-image1         "/bin/bash -e /init/…"   9 minutes ago       Exited (0) 6 minutes ago
+ ubuntu_contnr
+3246cbe64b05   cache-image1         "/bin/bash -e /init/…"   15 minutes ago      Up 15 minutes               80/tcp
+ sharp_kilby
+482d911d5db4   ubuntu               "/bin/bash"              About an hour ago   Up About an hour
+ Ubuntu01
+2a61a0f76bf9   cache-image          "/bin/bash -e /init/…"   About an hour ago   Up About an hour            0.0.0.0:8182->80/tcp, :::8182->80/tcp   ubuntu-nginx
+
+root@DESKTOP-1RT156R:~/project_lan1/ubuntu-nginx# docker container start Ubuntu02
+Ubuntu02
+
+root@DESKTOP-1RT156R:~/project_lan1/ubuntu-nginx# docker container pause Ubuntu02
+Ubuntu02
+
+root@DESKTOP-1RT156R:~/project_lan1/ubuntu-nginx# docker container unpause Ubuntu02
+Ubuntu02
+
+root@DESKTOP-1RT156R:~/project_lan1/ubuntu-nginx# docker container stop Ubuntu01
+Ubuntu01
+
+root@DESKTOP-1RT156R:~/project_lan1/ubuntu-nginx# docker container restart Ubuntu01
+Ubuntu01
+
+root@DESKTOP-1RT156R:~/project_lan1/ubuntu-nginx# docker container inspect 402464403b03
+[
+    {
+        "Id": "402464403b0313215bc8b41e9402dc826a6482b8a2e8c8fc30a4ab0e7d5c6909",
+        "Created": "2024-01-10T18:20:00.5290004Z",
+        "Path": "/bin/bash",
+        "Args": [
+            "-e",
+            "/init/entrypoint",
+            "/init/supervisord"
+        ],
+        "State": {
+            "Status": "running",
+            "Running": true,
+            "Paused": false,
+            "Restarting": false,
+            "OOMKilled": false,
+            "Dead": false,
+            "Pid": 2707,
+            "ExitCode": 0,
+            "Error": "",
+            "StartedAt": "2024-01-10T18:22:09.5932567Z",
+            "FinishedAt": "2024-01-10T18:20:05.1755122Z"
+        },
+        "Image": "sha256:2152522f9cd26390783ab61d69ae9ed75da6931867a1ad7200b70873aec9560d",
+        "ResolvConfPath": "/var/lib/docker/containers/402464403b0313215bc8b41e9402dc826a6482b8a2e8c8fc30a4ab0e7d5c6909/resolv.conf",
+        "HostnamePath": "/var/lib/docker/containers/402464403b0313215bc8b41e9402dc826a6482b8a2e8c8fc30a4ab0e7d5c6909/hostname",
+        "HostsPath": "/var/lib/docker/containers/402464403b0313215bc8b41e9402dc826a6482b8a2e8c8fc30a4ab0e7d5c6909/hosts",
+        "LogPath": "/var/lib/docker/containers/402464403b0313215bc8b41e9402dc826a6482b8a2e8c8fc30a4ab0e7d5c6909/402464403b0313215bc8b41e9402dc826a6482b8a2e8c8fc30a4ab0e7d5c6909-json.log",
+        "Name": "/Ubuntu02",
+        "RestartCount": 0,
+        "Driver": "overlay2",
+        "Platform": "linux",
+        "MountLabel": "",
+        "ProcessLabel": "",
+        "AppArmorProfile": "",
+        "ExecIDs": null,
+        "HostConfig": {
+            "Binds": null,
+            "ContainerIDFile": "",
+            "LogConfig": {
+                "Type": "json-file",
+                "Config": {}
+            },
+            "NetworkMode": "default",
+            "PortBindings": {},
+            "RestartPolicy": {
+                "Name": "no",
+                "MaximumRetryCount": 0
+            },
+            "AutoRemove": false,
+            "VolumeDriver": "",
+            "VolumesFrom": null,
+            "ConsoleSize": [
+                32,
+                148
+            ],
+            "CapAdd": null,
+            "CapDrop": null,
+            "CgroupnsMode": "host",
+            "Dns": [],
+            "DnsOptions": [],
+            "DnsSearch": [],
+            "ExtraHosts": null,
+            "GroupAdd": null,
+            "IpcMode": "private",
+            "Cgroup": "",
+            "Links": null,
+            "OomScoreAdj": 0,
+            "PidMode": "",
+            "Privileged": false,
+            "PublishAllPorts": false,
+            "ReadonlyRootfs": false,
+            "SecurityOpt": null,
+            "UTSMode": "",
+            "UsernsMode": "",
+            "ShmSize": 67108864,
+            "Runtime": "runc",
+            "Isolation": "",
+            "CpuShares": 0,
+            "Memory": 0,
+            "NanoCpus": 0,
+            "CgroupParent": "",
+            "BlkioWeight": 0,
+            "BlkioWeightDevice": [],
+            "BlkioDeviceReadBps": [],
+            "BlkioDeviceWriteBps": [],
+            "BlkioDeviceReadIOps": [],
+            "BlkioDeviceWriteIOps": [],
+            "CpuPeriod": 0,
+            "CpuQuota": 0,
+            "CpuRealtimePeriod": 0,
+            "CpuRealtimeRuntime": 0,
+            "CpusetCpus": "",
+            "CpusetMems": "",
+            "Devices": [],
+            "DeviceCgroupRules": null,
+            "DeviceRequests": null,
+            "MemoryReservation": 0,
+            "MemorySwap": 0,
+            "MemorySwappiness": null,
+            "OomKillDisable": false,
+            "PidsLimit": null,
+            "Ulimits": null,
+            "CpuCount": 0,
+            "CpuPercent": 0,
+            "IOMaximumIOps": 0,
+            "IOMaximumBandwidth": 0,
+            "MaskedPaths": [
+                "/proc/asound",
+                "/proc/acpi",
+                "/proc/kcore",
+                "/proc/keys",
+                "/proc/latency_stats",
+                "/proc/timer_list",
+                "/proc/timer_stats",
+                "/proc/sched_debug",
+                "/proc/scsi",
+                "/sys/firmware",
+                "/sys/devices/virtual/powercap"
+            ],
+            "ReadonlyPaths": [
+                "/proc/bus",
+                "/proc/fs",
+                "/proc/irq",
+                "/proc/sys",
+                "/proc/sysrq-trigger"
+            ]
+        },
+        "GraphDriver": {
+            "Data": {
+                "LowerDir": "/var/lib/docker/overlay2/47108b26722c3fc47adcdea0f0078b7baf8cab14ec6653f52c0e5ae175ba1ac8-init/diff:/var/lib/docker/overlay2/f1zxm5x6duapi9bbz75hqmo9g/diff:/var/lib/docker/overlay2/7jn4968fs6lcjoiovxqu9xmcr/diff:/var/lib/docker/overlay2/486kl5q41sg7c1y3h13sws5y6/diff:/var/lib/docker/overlay2/4b2eab4de586808328d7e9329bf884fd575b6c2641949db3612a90e976e532bd/diff:/var/lib/docker/overlay2/f26fcb76cde1970c4d623bac5948a7ae8ed876d29d3e4058c342492125b0d02f/diff:/var/lib/docker/overlay2/dd40d1f722a437471fd1ca8197ba3163ee6cb745afe5df10cc236ae37b26feaf/diff:/var/lib/docker/overlay2/859e4224b39c019ba7037e1f1a2ff085cab5a841c3525f66ffe8a4fef9f0ee25/diff:/var/lib/docker/overlay2/2f335a4af8fcff823a8ef3f5c51db2c3a3ff6c07c15cc0554adecd5c3187fcc7/diff:/var/lib/docker/overlay2/4bfd1c54dbc7e9c5599f6e3dff8328d15871dfd182503c15ac8aca0a1886ac4f/diff",
+                "MergedDir": "/var/lib/docker/overlay2/47108b26722c3fc47adcdea0f0078b7baf8cab14ec6653f52c0e5ae175ba1ac8/merged",
+                "UpperDir": "/var/lib/docker/overlay2/47108b26722c3fc47adcdea0f0078b7baf8cab14ec6653f52c0e5ae175ba1ac8/diff",
+                "WorkDir": "/var/lib/docker/overlay2/47108b26722c3fc47adcdea0f0078b7baf8cab14ec6653f52c0e5ae175ba1ac8/work"
+            },
+            "Name": "overlay2"
+        },
+        "Mounts": [],
+        "Config": {
+            "Hostname": "402464403b03",
+            "Domainname": "",
+            "User": "",
+            "AttachStdin": true,
+            "AttachStdout": true,
+            "AttachStderr": true,
+            "ExposedPorts": {
+                "80/tcp": {}
+            },
+            "Tty": true,
+            "OpenStdin": true,
+            "StdinOnce": true,
+            "Env": [
+                "PATH=/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin",
+                "SUPERVISORD_EXIT_ON_FATAL=1",
+                "LC_ALL=en_GB.UTF-8",
+                "LANG=en_GB.UTF-8",
+                "LANGUAGE=en_GB.UTF-8",
+                "TZ=Europe/London",
+                "SUPERVISORD_LOGLEVEL=WARN"
+            ],
+            "Cmd": [
+                "/init/supervisord"
+            ],
+            "Image": "cache-image:latest",
+            "Volumes": null,
+            "WorkingDir": "",
+            "Entrypoint": [
+                "/bin/bash",
+                "-e",
+                "/init/entrypoint"
+            ],
+            "OnBuild": null,
+            "Labels": {
+                "org.opencontainers.image.ref.name": "ubuntu",
+                "org.opencontainers.image.version": "18.04"
+            }
+        },
+        "NetworkSettings": {
+            "Bridge": "",
+            "SandboxID": "2c3b477456f88e39b50fd93d2b70141634fb7bec8b0352a7bed494042ff018e0",
+            "HairpinMode": false,
+            "LinkLocalIPv6Address": "",
+            "LinkLocalIPv6PrefixLen": 0,
+            "Ports": {
+                "80/tcp": null
+            },
+            "SandboxKey": "/var/run/docker/netns/2c3b477456f8",
+            "SecondaryIPAddresses": null,
+            "SecondaryIPv6Addresses": null,
+            "EndpointID": "45ae846f95c51f62450762b5368b3c13336acc1525612d038db3616fbeb7016c",
+            "Gateway": "172.17.0.1",
+            "GlobalIPv6Address": "",
+            "GlobalIPv6PrefixLen": 0,
+            "IPAddress": "172.17.0.5",
+            "IPPrefixLen": 16,
+            "IPv6Gateway": "",
+            "MacAddress": "02:42:ac:11:00:05",
+            "Networks": {
+                "bridge": {
+                    "IPAMConfig": null,
+                    "Links": null,
+                    "Aliases": null,
+                    "NetworkID": "08d28068a948216261d67ff7d6d2372c56cbd6591059c2bc742672a40f2950b7",
+                    "EndpointID": "45ae846f95c51f62450762b5368b3c13336acc1525612d038db3616fbeb7016c",
+                    "Gateway": "172.17.0.1",
+                    "IPAddress": "172.17.0.5",
+                    "IPPrefixLen": 16,
+                    "IPv6Gateway": "",
+                    "GlobalIPv6Address": "",
+                    "GlobalIPv6PrefixLen": 0,
+                    "MacAddress": "02:42:ac:11:00:05",
+                    "DriverOpts": null
+                }
+            }
+        }
+    }
+]
+
+root@DESKTOP-1RT156R:~/project_lan1/ubuntu-nginx# docker container ls
+CONTAINER ID   IMAGE                COMMAND                  CREATED             STATUS              PORTS                                   NAMES
+402464403b03   cache-image:latest   "/bin/bash -e /init/…"   5 minutes ago       Up 3 minutes        80/tcp                                  Ubuntu02
+3246cbe64b05   cache-image1         "/bin/bash -e /init/…"   20 minutes ago      Up 20 minutes       80/tcp                                  sharp_kilby
+482d911d5db4   ubuntu               "/bin/bash"              About an hour ago   Up About a minute                                           Ubuntu01
+2a61a0f76bf9   cache-image          "/bin/bash -e /init/…"   About an hour ago   Up About an hour    0.0.0.0:8182->80/tcp, :::8182->80/tcp   ubuntu-nginx
+
+root@DESKTOP-1RT156R:~/project_lan1/ubuntu-nginx# docker container stats
+CONTAINER ID   NAME           CPU %     MEM USAGE / LIMIT     MEM %     NET I/O       BLOCK I/O   PIDS
+402464403b03   Ubuntu02       0.02%     20.96MiB / 6.121GiB   0.33%     866B / 0B     0B / 0B     7
+3246cbe64b05   sharp_kilby    0.01%     21.06MiB / 6.121GiB   0.34%     1.08kB / 0B   0B / 0B     7
+482d911d5db4   Ubuntu01       0.00%     1.109MiB / 6.121GiB   0.02%     866B / 0B     0B / 0B     1
+2a61a0f76bf9   ubuntu-nginx   0.02%     21.07MiB / 6.121GiB   0.34%     1.44kB / 0B   0B / 0B     7
+CONTAINER ID   NAME           CPU %     MEM USAGE / LIMIT     MEM %     NET I/O       BLOCK I/O   PIDS
+402464403b03   Ubuntu02       0.02%     20.96MiB / 6.121GiB   0.33%     866B / 0B     0B / 0B     7
+3246cbe64b05   sharp_kilby    0.01%     21.06MiB / 6.121GiB   0.34%     1.08kB / 0B   0B / 0B     7
+482d911d5db4   Ubuntu01       0.00%     1.109MiB / 6.121GiB   0.02%     866B / 0B     0B / 0B     1
+2a61a0f76bf9   ubuntu-nginx   0.02%     21.07MiB / 6.121GiB   0.34%     1.44kB / 0B   0B / 0B     7
+CONTAINER ID   NAME           CPU %     MEM USAGE / LIMIT     MEM %     NET I/O       BLOCK I/O   PIDS
+402464403b03   Ubuntu02       0.02%     20.96MiB / 6.121GiB   0.33%     866B / 0B     0B / 0B     7
+3246cbe64b05   sharp_kilby    0.01%     21.06MiB / 6.121GiB   0.34%     1.08kB / 0B   0B / 0B     7
+482d911d5db4   Ubuntu01       0.00%     1.109MiB / 6.121GiB   0.02%     866B / 0B     0B / 0B     1
+2a61a0f76bf9   ubuntu-nginx   0.02%     21.07MiB / 6.121GiB   0.34%     1.44kB / 0B   0B / 0B     7
+CONTAINER ID   NAME           CPU %     MEM USAGE / LIMIT     MEM %     NET I/O       BLOCK I/O   PIDS
+402464403b03   Ubuntu02       0.02%     20.96MiB / 6.121GiB   0.33%     866B / 0B     0B / 0B     7
+3246cbe64b05   sharp_kilby    0.01%     21.06MiB / 6.121GiB   0.34%     1.08kB / 0B   0B / 0B     7
+482d911d5db4   Ubuntu01       0.00%     1.109MiB / 6.121GiB   0.02%     866B / 0B     0B / 0B     1
+2a61a0f76bf9   ubuntu-nginx   0.02%     21.07MiB / 6.121GiB   0.34%     1.44kB / 0B   0B / 0B     7
+CONTAINER ID   NAME           CPU %     MEM USAGE / LIMIT     MEM %     NET I/O       BLOCK I/O   PIDS
+402464403b03   Ubuntu02       0.01%     20.96MiB / 6.121GiB   0.33%     866B / 0B     0B / 0B     7
+3246cbe64b05   sharp_kilby    0.01%     21.06MiB / 6.121GiB   0.34%     1.08kB / 0B   0B / 0B     7
+482d911d5db4   Ubuntu01       0.00%     1.109MiB / 6.121GiB   0.02%     866B / 0B     0B / 0B     1
+2a61a0f76bf9   ubuntu-nginx   0.02%     21.07MiB / 6.121GiB   0.34%     1.44kB / 0B   0B / 0B     7
+CONTAINER ID   NAME           CPU %     MEM USAGE / LIMIT     MEM %     NET I/O       BLOCK I/O   PIDS
+402464403b03   Ubuntu02       0.01%     20.96MiB / 6.121GiB   0.33%     866B / 0B     0B / 0B     7
+3246cbe64b05   sharp_kilby    0.01%     21.06MiB / 6.121GiB   0.34%     1.08kB / 0B   0B / 0B     7
+482d911d5db4   Ubuntu01       0.00%     1.109MiB / 6.121GiB   0.02%     866B / 0B     0B / 0B     1
+2a61a0f76bf9   ubuntu-nginx   0.02%     21.07MiB / 6.121GiB   0.34%     1.44kB / 0B   0B / 0B     7
+CONTAINER ID   NAME           CPU %     MEM USAGE / LIMIT     MEM %     NET I/O       BLOCK I/O   PIDS
+402464403b03   Ubuntu02       0.03%     20.96MiB / 6.121GiB   0.33%     866B / 0B     0B / 0B     7
+3246cbe64b05   sharp_kilby    0.01%     21.06MiB / 6.121GiB   0.34%     1.08kB / 0B   0B / 0B     7
+482d911d5db4   Ubuntu01       0.00%     1.109MiB / 6.121GiB   0.02%     866B / 0B     0B / 0B     1
+2a61a0f76bf9   ubuntu-nginx   0.02%     21.07MiB / 6.121GiB   0.34%     1.44kB / 0B   0B / 0B     7
+^C
+
+root@DESKTOP-1RT156R:~/project_lan1/ubuntu-nginx# docker system events --since 10m
+2024-01-10T23:47:51.962369200+05:30 container create 2f5bc96329a76000c60d5c33288e116dc115c44615c6f69576652c8b4c4ef598 (image=ubuntu, name=clever_zhukovsky, org.opencontainers.image.ref.name=ubuntu, org.opencontainers.image.version=22.04)
+2024-01-10T23:47:51.967845700+05:30 container attach 2f5bc96329a76000c60d5c33288e116dc115c44615c6f69576652c8b4c4ef598 (image=ubuntu, name=clever_zhukovsky, org.opencontainers.image.ref.name=ubuntu, org.opencontainers.image.version=22.04)
+2024-01-10T23:47:51.988700000+05:30 network connect 08d28068a948216261d67ff7d6d2372c56cbd6591059c2bc742672a40f2950b7 (container=2f5bc96329a76000c60d5c33288e116dc115c44615c6f69576652c8b4c4ef598, name=bridge, type=bridge)
+2024-01-10T23:47:52.303813900+05:30 container start 2f5bc96329a76000c60d5c33288e116dc115c44615c6f69576652c8b4c4ef598 (image=ubuntu, name=clever_zhukovsky, org.opencontainers.image.ref.name=ubuntu, org.opencontainers.image.version=22.04)
+2024-01-10T23:47:52.306259700+05:30 container resize 2f5bc96329a76000c60d5c33288e116dc115c44615c6f69576652c8b4c4ef598 (height=32, image=ubuntu, name=clever_zhukovsky, org.opencontainers.image.ref.name=ubuntu, org.opencontainers.image.version=22.04, width=148)
+2024-01-10T23:48:14.592591800+05:30 network disconnect 08d28068a948216261d67ff7d6d2372c56cbd6591059c2bc742672a40f2950b7 (container=2f5bc96329a76000c60d5c33288e116dc115c44615c6f69576652c8b4c4ef598, name=bridge, type=bridge)
+2024-01-10T23:48:14.608444300+05:30 container die 2f5bc96329a76000c60d5c33288e116dc115c44615c6f69576652c8b4c4ef598 (execDuration=22, exitCode=0, image=ubuntu, name=clever_zhukovsky, org.opencontainers.image.ref.name=ubuntu, org.opencontainers.image.version=22.04)
+2024-01-10T23:48:56.177611100+05:30 container rename 482d911d5db44f25f9368d1b24adbb7ff8bce96def7cebc7558df1faa07dd6de (image=ubuntu, name=Ubuntu01, oldName=/upbeat_mccarthy, org.opencontainers.image.ref.name=ubuntu, org.opencontainers.image.version=22.04)
+2024-01-10T23:50:00.571185600+05:30 container create 402464403b0313215bc8b41e9402dc826a6482b8a2e8c8fc30a4ab0e7d5c6909 (image=cache-image:latest, name=Ubuntu02, org.opencontainers.image.ref.name=ubuntu, org.opencontainers.image.version=18.04)
+2024-01-10T23:50:00.575843000+05:30 container attach 402464403b0313215bc8b41e9402dc826a6482b8a2e8c8fc30a4ab0e7d5c6909 (image=cache-image:latest, name=Ubuntu02, org.opencontainers.image.ref.name=ubuntu, org.opencontainers.image.version=18.04)
+2024-01-10T23:50:00.595702400+05:30 network connect 08d28068a948216261d67ff7d6d2372c56cbd6591059c2bc742672a40f2950b7 (container=402464403b0313215bc8b41e9402dc826a6482b8a2e8c8fc30a4ab0e7d5c6909, name=bridge, type=bridge)
+2024-01-10T23:50:00.908011200+05:30 container start 402464403b0313215bc8b41e9402dc826a6482b8a2e8c8fc30a4ab0e7d5c6909 (image=cache-image:latest, name=Ubuntu02, org.opencontainers.image.ref.name=ubuntu, org.opencontainers.image.version=18.04)
+2024-01-10T23:50:00.910182700+05:30 container resize 402464403b0313215bc8b41e9402dc826a6482b8a2e8c8fc30a4ab0e7d5c6909 (height=32, image=cache-image:latest, name=Ubuntu02, org.opencontainers.image.ref.name=ubuntu, org.opencontainers.image.version=18.04, width=148)
+2024-01-10T23:50:05.464774800+05:30 network disconnect 08d28068a948216261d67ff7d6d2372c56cbd6591059c2bc742672a40f2950b7 (container=402464403b0313215bc8b41e9402dc826a6482b8a2e8c8fc30a4ab0e7d5c6909, name=bridge, type=bridge)
+2024-01-10T23:50:05.480110100+05:30 container die 402464403b0313215bc8b41e9402dc826a6482b8a2e8c8fc30a4ab0e7d5c6909 (execDuration=4, exitCode=0, image=cache-image:latest, name=Ubuntu02, org.opencontainers.image.ref.name=ubuntu, org.opencontainers.image.version=18.04)
+2024-01-10T23:52:09.308420400+05:30 network connect 08d28068a948216261d67ff7d6d2372c56cbd6591059c2bc742672a40f2950b7 (container=402464403b0313215bc8b41e9402dc826a6482b8a2e8c8fc30a4ab0e7d5c6909, name=bridge, type=bridge)
+2024-01-10T23:52:09.601287400+05:30 container start 402464403b0313215bc8b41e9402dc826a6482b8a2e8c8fc30a4ab0e7d5c6909 (image=cache-image:latest, name=Ubuntu02, org.opencontainers.image.ref.name=ubuntu, org.opencontainers.image.version=18.04)
+2024-01-10T23:52:23.026002500+05:30 container pause 402464403b0313215bc8b41e9402dc826a6482b8a2e8c8fc30a4ab0e7d5c6909 (image=cache-image:latest, name=Ubuntu02, org.opencontainers.image.ref.name=ubuntu, org.opencontainers.image.version=18.04)
+2024-01-10T23:52:29.689592800+05:30 container unpause 402464403b0313215bc8b41e9402dc826a6482b8a2e8c8fc30a4ab0e7d5c6909 (image=cache-image:latest, name=Ubuntu02, org.opencontainers.image.ref.name=ubuntu, org.opencontainers.image.version=18.04)
+2024-01-10T23:53:05.744849400+05:30 container kill 482d911d5db44f25f9368d1b24adbb7ff8bce96def7cebc7558df1faa07dd6de (image=ubuntu, name=Ubuntu01, org.opencontainers.image.ref.name=ubuntu, org.opencontainers.image.version=22.04, signal=15)
+2024-01-10T23:53:15.761484700+05:30 container kill 482d911d5db44f25f9368d1b24adbb7ff8bce96def7cebc7558df1faa07dd6de (image=ubuntu, name=Ubuntu01, org.opencontainers.image.ref.name=ubuntu, org.opencontainers.image.version=22.04, signal=9)
+2024-01-10T23:53:16.034144800+05:30 network disconnect 08d28068a948216261d67ff7d6d2372c56cbd6591059c2bc742672a40f2950b7 (container=482d911d5db44f25f9368d1b24adbb7ff8bce96def7cebc7558df1faa07dd6de, name=bridge, type=bridge)
+2024-01-10T23:53:16.040529000+05:30 container stop 482d911d5db44f25f9368d1b24adbb7ff8bce96def7cebc7558df1faa07dd6de (image=ubuntu, name=Ubuntu01, org.opencontainers.image.ref.name=ubuntu, org.opencontainers.image.version=22.04)
+2024-01-10T23:53:16.046621600+05:30 container die 482d911d5db44f25f9368d1b24adbb7ff8bce96def7cebc7558df1faa07dd6de (execDuration=4546, exitCode=137, image=ubuntu, name=Ubuntu01, org.opencontainers.image.ref.name=ubuntu, org.opencontainers.image.version=22.04)
+2024-01-10T23:53:35.143928500+05:30 network connect 08d28068a948216261d67ff7d6d2372c56cbd6591059c2bc742672a40f2950b7 (container=482d911d5db44f25f9368d1b24adbb7ff8bce96def7cebc7558df1faa07dd6de, name=bridge, type=bridge)
+2024-01-10T23:53:35.410338200+05:30 container start 482d911d5db44f25f9368d1b24adbb7ff8bce96def7cebc7558df1faa07dd6de (image=ubuntu, name=Ubuntu01, org.opencontainers.image.ref.name=ubuntu, org.opencontainers.image.version=22.04)
+2024-01-10T23:53:35.410379800+05:30 container restart 482d911d5db44f25f9368d1b24adbb7ff8bce96def7cebc7558df1faa07dd6de (image=ubuntu, name=Ubuntu01, org.opencontainers.image.ref.name=ubuntu, org.opencontainers.image.version=22.04)
+^C
+
+root@DESKTOP-1RT156R:~/project_lan1/ubuntu-nginx# docker container kill 402464403b03
+402464403b03
+
+root@DESKTOP-1RT156R:~/project_lan1/ubuntu-nginx# docker container ls
+CONTAINER ID   IMAGE          COMMAND                  CREATED             STATUS             PORTS                                   NAMES
+3246cbe64b05   cache-image1   "/bin/bash -e /init/…"   22 minutes ago      Up 22 minutes      80/tcp                                  sharp_kilby
+482d911d5db4   ubuntu         "/bin/bash"              About an hour ago   Up 3 minutes                                               Ubuntu01
+2a61a0f76bf9   cache-image    "/bin/bash -e /init/…"   About an hour ago   Up About an hour   0.0.0.0:8182->80/tcp, :::8182->80/tcp   ubuntu-nginx
+
+root@DESKTOP-1RT156R:~/project_lan1/ubuntu-nginx# docker container ls -a
+CONTAINER ID   IMAGE                COMMAND                  CREATED             STATUS                        PORTS
+   NAMES
+402464403b03   cache-image:latest   "/bin/bash -e /init/…"   7 minutes ago       Exited (137) 26 seconds ago
+   Ubuntu02
+2f5bc96329a7   ubuntu               "/bin/bash"              9 minutes ago       Exited (0) 9 minutes ago
+   clever_zhukovsky
+6b8fd84ccf45   cache-image1         "/bin/bash -e /init/…"   16 minutes ago      Exited (0) 13 minutes ago
+   ubuntu_contnr
+   
+root@DESKTOP-1RT156R:~/project_lan1/ubuntu-nginx# docker container ls -a
+CONTAINER ID   IMAGE                COMMAND                  CREATED             STATUS                            PORTS                                   NAMES
+402464403b03   cache-image:latest   "/bin/bash -e /init/…"   8 minutes ago       Exited (137) About a minute ago                                           Ubuntu02
+2f5bc96329a7   ubuntu               "/bin/bash"              10 minutes ago      Exited (0) 10 minutes ago                                                 clever_zhukovsky
+6b8fd84ccf45   cache-image1         "/bin/bash -e /init/…"   17 minutes ago      Exited (0) 14 minutes ago                                                 ubuntu_contnr
+3246cbe64b05   cache-image1         "/bin/bash -e /init/…"   23 minutes ago      Up 23 minutes                     80/tcp                                  sharp_kilby
+482d911d5db4   ubuntu               "/bin/bash"              About an hour ago   Up 4 minutes                                                              Ubuntu01
+2a61a0f76bf9   cache-image          "/bin/bash -e /init/…"   About an hour ago   Up About an hour                  0.0.0.0:8182->80/tcp, :::8182->80/tcp   ubuntu-nginx
+
+root@DESKTOP-1RT156R:~/project_lan1/ubuntu-nginx# docker container rm 402464403b03
+402464403b03
+
+root@DESKTOP-1RT156R:~/project_lan1/ubuntu-nginx# docker container rm 2f5bc96329a7
+2f5bc96329a7
+
+root@DESKTOP-1RT156R:~/project_lan1/ubuntu-nginx# docker container rm 6b8fd84ccf45
+6b8fd84ccf45
+
+root@DESKTOP-1RT156R:~/project_lan1/ubuntu-nginx# docker container ls -a
+CONTAINER ID   IMAGE          COMMAND                  CREATED             STATUS             PORTS                                   NAMES
+3246cbe64b05   cache-image1   "/bin/bash -e /init/…"   24 minutes ago      Up 24 minutes      80/tcp                                  sharp_kilby
+482d911d5db4   ubuntu         "/bin/bash"              About an hour ago   Up 5 minutes                                               Ubuntu01
+2a61a0f76bf9   cache-image    "/bin/bash -e /init/…"   About an hour ago   Up About an hour   0.0.0.0:8182->80/tcp, :::8182->80/tcp   ubuntu-nginx
+
+
+
+
+
+=============================================================
+
+18. Create a DockerHub account, set up a repository with meaningful name.
+Ans-
+
+baigzuber
+/
+dock-hub
+
+
+Created: less than a minute ago
+
+
+=============================================================
