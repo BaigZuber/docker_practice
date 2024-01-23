@@ -1,0 +1,300 @@
+
+										Docker Hands On Lab 03
+
+
+
+
+1. Run four HTTPD Docker containers with distinct, meaningful names, and apply restart policies (NO, On-Failure, Always, and Unless-Stopped) to each of the four containers, respectively. Demonstrate that the restart policies function as expected.
+Ans.
+
+root@DESKTOP-1RT156R:~# docker run -d --name  web_app_frontend  --restart no httpd
+ff2c243dd9b4fdc85393f62a1ffe25d529fa3c9858525a1e9bc05747fb36aa9e
+
+root@DESKTOP-1RT156R:~# docker container ls
+CONTAINER ID   IMAGE     COMMAND              CREATED         STATUS         PORTS     NAMES
+ff2c243dd9b4   httpd     "httpd-foreground"   8 seconds ago   Up 8 seconds   80/tcp    web_app_frontend
+
+root@DESKTOP-1RT156R:~# docker inspect ff2c243dd9b4
+[
+    {
+        "Id": "ff2c243dd9b4fdc85393f62a1ffe25d529fa3c9858525a1e9bc05747fb36aa9e",
+        "Created": "2024-01-23T09:46:34.1069833Z",
+        "Path": "httpd-foreground",
+        "Args": [],
+        "State": {
+            "Status": "running",
+            "Running": true,
+            "Paused": false,
+            "Restarting": false,
+            "OOMKilled": false,
+            "Dead": false,
+            "Pid": 1578,
+            "ExitCode": 0,
+            "Error": "",
+            "StartedAt": "2024-01-23T09:46:34.4753317Z",
+            "FinishedAt": "0001-01-01T00:00:00Z"
+        },
+
+root@DESKTOP-1RT156R:~# docker run -d --name api_server --restart on-failure httpd
+1b1a6f19e1d4588ea449e7d1e1a0bd5949bcd729661d161376938237e5ba719d
+
+root@DESKTOP-1RT156R:~# docker container ls
+CONTAINER ID   IMAGE     COMMAND              CREATED          STATUS          PORTS     NAMES
+1b1a6f19e1d4   httpd     "httpd-foreground"   11 seconds ago   Up 10 seconds   80/tcp    api_server
+ff2c243dd9b4   httpd     "httpd-foreground"   4 minutes ago    Up 4 minutes    80/tcp    web_app_frontend
+
+root@DESKTOP-1RT156R:~# docker inspect 1b1a6f19e1d4
+[
+    {
+        "Id": "1b1a6f19e1d4588ea449e7d1e1a0bd5949bcd729661d161376938237e5ba719d",
+        "Created": "2024-01-23T09:50:36.3604958Z",
+        "Path": "httpd-foreground",
+        "Args": [],
+        "State": {
+            "Status": "running",
+            "Running": true,
+            "Paused": false,
+            "Restarting": false,
+            "OOMKilled": false,
+            "Dead": false,
+            "Pid": 1736,
+            "ExitCode": 0,
+            "Error": "",
+            "StartedAt": "2024-01-23T09:50:36.724077Z",
+            "FinishedAt": "0001-01-01T00:00:00Z"
+        },
+		
+root@DESKTOP-1RT156R:~# docker run -d --name database_service --restart always httpd sleep 10
+1bf59287537ceb54098513b015358f61b09d7e434ea15a5e86170623c6b225ce
+
+root@DESKTOP-1RT156R:~# docker container ls
+CONTAINER ID   IMAGE     COMMAND              CREATED         STATUS         PORTS     NAMES
+1bf59287537c   httpd     "sleep 10"           6 seconds ago   Up 5 seconds   80/tcp    database_service
+1b1a6f19e1d4   httpd     "httpd-foreground"   2 minutes ago   Up 2 minutes   80/tcp    api_server
+ff2c243dd9b4   httpd     "httpd-foreground"   6 minutes ago   Up 6 minutes   80/tcp    web_app_frontend
+
+root@DESKTOP-1RT156R:~# docker inspect 1bf59287537c
+[
+    {
+        "Id": "1bf59287537ceb54098513b015358f61b09d7e434ea15a5e86170623c6b225ce",
+        "Created": "2024-01-23T09:53:09.2783156Z",
+        "Path": "sleep",
+        "Args": [
+            "10"
+        ],
+        "State": {
+            "Status": "running",
+            "Running": true,
+            "Paused": false,
+            "Restarting": false,
+            "OOMKilled": false,
+            "Dead": false,
+            "Pid": 1968,
+            "ExitCode": 0,
+            "Error": "",
+            "StartedAt": "2024-01-23T09:53:20.3823102Z",
+            "FinishedAt": "2024-01-23T09:53:20.0014617Z"
+        },
+		
+root@DESKTOP-1RT156R:~# docker run -d --name monitoring_tool --restart unless-stopped httpd sleep 10
+2fe0bdddd826bd67188ff7b3b2594fab18774d217f2f4359f16c4cab516c7bc5
+
+root@DESKTOP-1RT156R:~# docker container ls
+CONTAINER ID   IMAGE     COMMAND              CREATED          STATUS         PORTS     NAMES
+2fe0bdddd826   httpd     "sleep 10"           3 seconds ago    Up 2 seconds   80/tcp    monitoring_tool
+1bf59287537c   httpd     "sleep 10"           34 seconds ago   Up 2 seconds   80/tcp    database_service
+1b1a6f19e1d4   httpd     "httpd-foreground"   3 minutes ago    Up 3 minutes   80/tcp    api_server
+ff2c243dd9b4   httpd     "httpd-foreground"   7 minutes ago    Up 7 minutes   80/tcp    web_app_frontend
+
+root@DESKTOP-1RT156R:~# docker inspect 2fe0bdddd826
+[
+    {
+        "Id": "2fe0bdddd826bd67188ff7b3b2594fab18774d217f2f4359f16c4cab516c7bc5",
+        "Created": "2024-01-23T09:53:40.7309156Z",
+        "Path": "sleep",
+        "Args": [
+            "10"
+        ],
+        "State": {
+            "Status": "running",
+            "Running": true,
+            "Paused": false,
+            "Restarting": false,
+            "OOMKilled": false,
+            "Dead": false,
+            "Pid": 2246,
+            "ExitCode": 0,
+            "Error": "",
+            "StartedAt": "2024-01-23T09:53:51.8251025Z",
+            "FinishedAt": "2024-01-23T09:53:51.3492178Z"
+        },
+
+
+
+
+=====================================================================================
+
+2. Change the restart policy of a above running container from the default to a custom policy using the docker update command. e.g. docker update –help.
+Ans.
+
+root@DESKTOP-1RT156R:~# docker container ls
+CONTAINER ID   IMAGE     COMMAND              CREATED          STATUS          PORTS     NAMES
+2fe0bdddd826   httpd     "sleep 10"           7 minutes ago    Up 3 seconds    80/tcp    monitoring_tool
+1bf59287537c   httpd     "sleep 10"           7 minutes ago    Up 2 seconds    80/tcp    database_service
+1b1a6f19e1d4   httpd     "httpd-foreground"   10 minutes ago   Up 10 minutes   80/tcp    api_server
+ff2c243dd9b4   httpd     "httpd-foreground"   14 minutes ago   Up 14 minutes   80/tcp    web_app_frontend
+
+root@DESKTOP-1RT156R:~# docker update --restart=unless-stopped api_server
+api_server
+"NetworkMode": "default",
+            "PortBindings": {},
+            "RestartPolicy": {
+                "Name": "unless-stopped",
+                "MaximumRetryCount": 0
+				
+
+
+
+
+=====================================================================================
+
+Q3. Launch an NGINX container with a meaningful name and expose it on the host's port 80. Create an "index.html" file containing the text "Hello there, Let's be the Team CloudEthiX," and copy the file to the container's "/usr/share/nginx/html/" location. Access the container in a browser to verify that the webpage displays correctly.
+Ans.
+
+root@DESKTOP-1RT156R:~# docker container run -itd  -p 8080:80 --name my_nginx nginx
+Unable to find image 'nginx:latest' locally
+latest: Pulling from library/nginx
+2f44b7a888fa: Already exists
+8b7dd3ed1dc3: Already exists
+35497dd96569: Already exists
+36664b6ce66b: Already exists
+2d455521f76c: Already exists
+dc9c4fdb83d6: Already exists
+8056d2bcf3b6: Already exists
+Digest: sha256:4c0fdaa8b6341bfdeca5f18f7837462c80cff90527ee35ef185571e1c327beac
+Status: Downloaded newer image for nginx:latest
+2a7d85c83f41ee4cb681bfd65a69f36d68b79f965ea10ea4880b26cf9a73e6df
+root@DESKTOP-1RT156R:~# docker container ls
+CONTAINER ID   IMAGE     COMMAND                  CREATED          STATUS          PORTS                                   NAMES
+2a7d85c83f41   nginx     "/docker-entrypoint.…"   10 seconds ago   Up 10 seconds   0.0.0.0:8080->80/tcp, :::8080->80/tcp   my_nginx
+
+root@DESKTOP-1RT156R:~# vim index.html
+root@DESKTOP-1RT156R:~# cat  index.html
+hii
+good
+morning
+team
+.
+this
+is
+Zuber
+from
+Cloud.
+
+root@DESKTOP-1RT156R:~# curl 172.17.0.6
+hii
+good
+morning
+team
+.
+this
+is
+Zuber
+from
+Cloud.
+
+
+
+
+=====================================================================================
+
+Q4. Run a docker container with CPU and Memory limit.  docker container run --help
+ref links :- https://phoenixnap.com/kb/docker-memory-and-cpu-limit
+https://www.baeldung.com/ops/docker-memory-limit
+Ans.
+
+root@DESKTOP-1RT156R:~# docker container run -itd  --memory "512m" nginx
+a5dd590493b4cfe95408bce283bf397d65c09a14ac27e7c3f867285cb17be4de
+
+root@DESKTOP-1RT156R:~# docker container ls
+CONTAINER ID   IMAGE     COMMAND                  CREATED          STATUS          PORTS                                   NAMES
+a5dd590493b4   nginx     "/docker-entrypoint.…"   8 seconds ago    Up 7 seconds    80/tcp                                  jolly_gagarin
+2a7d85c83f41   nginx     "/docker-entrypoint.…"   19 minutes ago   Up 19 minutes   0.0.0.0:8080->80/tcp, :::8080->80/tcp   my_nginx
+2fe0bdddd826   httpd     "sleep 10"               31 minutes ago   Up 3 seconds    80/tcp                                  monitoring_tool
+1bf59287537c   httpd     "sleep 10"               31 minutes ago   Up 1 second     80/tcp                                  database_service
+1b1a6f19e1d4   httpd     "httpd-foreground"       34 minutes ago   Up 34 minutes   80/tcp                                  api_server
+ff2c243dd9b4   httpd     "httpd-foreground"       38 minutes ago   Up 38 minutes   80/tcp                                  web_app_frontend
+
+root@DESKTOP-1RT156R:~# docker container stats
+CONTAINER ID   NAME               CPU %     MEM USAGE / LIMIT     MEM %     NET I/O           BLOCK I/O   PIDS
+a5dd590493b4   jolly_gagarin      0.00%     4.375MiB / 512MiB     0.85%     586B / 0B         0B / 0B     5
+2a7d85c83f41   my_nginx           0.00%     6.527MiB / 6.121GiB   0.10%     2.88kB / 3.74kB   0B / 0B     5
+2fe0bdddd826   monitoring_tool    0.00%     316KiB / 6.121GiB     0.00%     586B / 0B         0B / 0B     1
+1bf59287537c   database_service   0.00%     392KiB / 6.121GiB     0.01%     586B / 0B         0B / 0B     1
+1b1a6f19e1d4   api_server         0.00%     29.86MiB / 6.121GiB   0.48%     1.12kB / 0B       0B / 0B     82
+ff2c243dd9b4   web_app_frontend   0.00%     21.88MiB / 6.121GiB   0.35%     1.34kB / 0B       0B / 0B     82
+CONTAINER ID   NAME               CPU %     MEM USAGE / LIMIT     MEM %     NET I/O           BLOCK I/O   PIDS
+a5dd590493b4   jolly_gagarin      0.00%     4.375MiB / 512MiB     0.85%     586B / 0B         0B / 0B     5
+2a7d85c83f41   my_nginx           0.00%     6.527MiB / 6.121GiB   0.10%     2.88kB / 3.74kB   0B / 0B     5
+2fe0bdddd826   monitoring_tool    0.00%     316KiB / 6.121GiB     0.00%     586B / 0B         0B / 0B     1
+1bf59287537c   database_service   0.00%     392KiB / 6.121GiB     0.01%     586B / 0B         0B / 0B     1
+1b1a6f19e1d4   api_server         0.00%     29.86MiB / 6.121GiB   0.48%     1.12kB / 0B       0B / 0B     82
+ff2c243dd9b4   web_app_frontend   0.00%     21.88MiB / 6.121GiB   0.35%     1.34kB / 0B       0B / 0B     82
+CONTAINER ID   NAME               CPU %     MEM USAGE / LIMIT     MEM %     NET I/O           BLOCK I/O   PIDS
+a5dd590493b4   jolly_gagarin      0.00%     4.375MiB / 512MiB     0.85%     656B / 0B         0B / 0B     5
+2a7d85c83f41   my_nginx           0.00%     6.527MiB / 6.121GiB   0.10%     2.88kB / 3.74kB   0B / 0B     5
+2fe0bdddd826   monitoring_tool    0.00%     316KiB / 6.121GiB     0.00%     586B / 0B         0B / 0B     1
+1bf59287537c   database_service   0.00%     392KiB / 6.121GiB     0.01%     586B / 0B         0B / 0B     1
+1b1a6f19e1d4   api_server         0.00%     29.86MiB / 6.121GiB   0.48%     1.12kB / 0B       0B / 0B     82
+ff2c243dd9b4   web_app_frontend   0.00%     21.88MiB / 6.121GiB   0.35%     1.34kB / 0B       0B / 0B     82
+^Z
+[2]+  Stopped                 docker container stats
+
+root@DESKTOP-1RT156R:~# docker container inspect a5dd590493b4 | grep MemorySwap
+            "MemorySwap": 1073741824,
+            "MemorySwappiness": null,
+			
+root@DESKTOP-1RT156R:~# docker run -itd --cpus="0.5" nginx
+a896c909e7a4b45d1551b166fa190895551b88f742554d7138fd358246e4aecf
+
+root@DESKTOP-1RT156R:~# docker run -itd --cpu-shares="2000" nginx
+175103e499d0676fdb6ebf9bc3e2108db8ea994c6ae5cd0ae69021e70534e3d8
+root@DESKTOP-1RT156R:~#
+
+
+
+
+
+=====================================================================================
+Q5.  Update CPU and Memory of docker container using docker update.
+		ref links :- https://docs.docker.com/engine/reference/commandline/update/
+Ans.
+root@DESKTOP-1RT156R:~# docker update --cpu-shares 512 a5dd590493b4
+a5dd590493b4
+
+root@DESKTOP-1RT156R:~# docker update --cpu-shares 200 -m 150M --memory-swap 200M a5dd590493b4
+a5dd590493b4
+
+root@DESKTOP-1RT156R:~# docker run -itd --name test --kernel-memory 150M nginx bash
+27c38f3971dd4a179a21c4df33d6d10aac9ededd1cb15f93334757220f00a4b9
+
+root@DESKTOP-1RT156R:~# docker run -itd --name test01 --kernel-memory 150M nginx bash
+4583262f929a0fdd807c3fcb80016fba9f68d3cb042faa78e12f1aa8517cd54d
+
+root@DESKTOP-1RT156R:~# docker container ls
+CONTAINER ID   IMAGE     COMMAND                  CREATED          STATUS          PORTS                                   NAMES
+4583262f929a   nginx     "/docker-entrypoint.…"   7 seconds ago    Up 6 seconds    80/tcp                                  test01
+27c38f3971dd   nginx     "/docker-entrypoint.…"   19 seconds ago   Up 18 seconds   80/tcp                                  test
+175103e499d0   nginx     "/docker-entrypoint.…"   9 minutes ago    Up 9 minutes    80/tcp                                  charming_snyder
+a896c909e7a4   nginx     "/docker-entrypoint.…"   9 minutes ago    Up 9 minutes    80/tcp                                  loving_mcnulty
+a5dd590493b4   nginx     "/docker-entrypoint.…"   10 minutes ago   Up 10 minutes   80/tcp                                  jolly_gagarin
+2a7d85c83f41   nginx     "/docker-entrypoint.…"   30 minutes ago   Up 30 minutes   0.0.0.0:8080->80/tcp, :::8080->80/tcp   my_nginx
+2fe0bdddd826   httpd     "sleep 10"               42 minutes ago   Up 8 seconds    80/tcp                                  monitoring_tool
+1bf59287537c   httpd     "sleep 10"               42 minutes ago   Up 6 seconds    80/tcp                                  database_service
+1b1a6f19e1d4   httpd     "httpd-foreground"       45 minutes ago   Up 45 minutes   80/tcp                                  api_server
+ff2c243dd9b4   httpd     "httpd-foreground"       49 minutes ago   Up 49 minutes   80/tcp                                  web_app_frontend
+root@DESKTOP-1RT156R:~#
+
+
+
+=====================================================================================
