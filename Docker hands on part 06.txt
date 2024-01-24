@@ -1,5 +1,5 @@
 									DOCKER Hands on Lab 06
-						Task List: Docker Image Creation and Deployment
+						        Task List: Docker Image Creation and Deployment
 
 
 
