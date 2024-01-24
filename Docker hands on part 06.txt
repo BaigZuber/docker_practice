@@ -42,12 +42,13 @@ root@DESKTOP-1RT156R:~/AWSECR# cd ..
 root@DESKTOP-1RT156R:~# cd DHUB/
 root@DESKTOP-1RT156R:~/DHUB# vi Dockerfile
 root@DESKTOP-1RT156R:~/DHUB# cat Dockerfile
-FROM ubuntu
+FROM ubuntu:latest
 RUN apt-get update && apt-get install -y apache2
-RUN echo "I am from Docker Hub" > /var/www/html/index.html
-ENV ENV_NAME=DHUB
-EXPOSE 80
+COPY index.html  /var/www/html/index.html
+COPY apache2.conf /etc/apache2/apache2.conf
+ENV ENV_NAME=AWSECR
 ENTRYPOINT ["apache2ctl", "-D", "FOREGROUND"]
+EXPOSE 80
 root@DESKTOP-1RT156R:~/DHUB# cd ..
 root@DESKTOP-1RT156R:~#
 
